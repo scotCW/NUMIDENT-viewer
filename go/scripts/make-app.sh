@@ -4,7 +4,7 @@
 set -eu
 BIN=${1:-bin/numident-viewer}
 VERSION=${2:-0.1.0}
-APP="bin/NUMIDENT Viewer.app"
+APP="bin/NUMIDENT Viewer (Web).app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/numident-viewer"
@@ -13,9 +13,9 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <key>CFBundleName</key><string>NUMIDENT Viewer</string>
-  <key>CFBundleDisplayName</key><string>NUMIDENT Viewer</string>
-  <key>CFBundleIdentifier</key><string>local.numident.viewer</string>
+  <key>CFBundleName</key><string>NUMIDENT Viewer (Web)</string>
+  <key>CFBundleDisplayName</key><string>NUMIDENT Viewer (Web)</string>
+  <key>CFBundleIdentifier</key><string>local.numident.viewer.web</string>
   <key>CFBundleVersion</key><string>$VERSION</string>
   <key>CFBundleShortVersionString</key><string>$VERSION</string>
   <key>CFBundleExecutable</key><string>numident-viewer</string>

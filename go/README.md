@@ -23,7 +23,7 @@ a small web server on `127.0.0.1` only and opens the interface in your browser.
 ```sh
 make test             # go vet + all tests
 make build-universal  # bin/numident-viewer (x86_64 + arm64)
-make app              # bin/NUMIDENT Viewer.app (ad-hoc signed)
+make app              # bin/NUMIDENT Viewer (Web).app (ad-hoc signed)
 ```
 
 ## Run
@@ -35,11 +35,11 @@ make app              # bin/NUMIDENT Viewer.app (ad-hoc signed)
 ./bin/numident-viewer -no-browser           # just print the URL
 ```
 
-You can also double-click `NUMIDENT Viewer.app`. It has no Dock icon; use
+You can also double-click `NUMIDENT Viewer (Web).app`. It has no Dock icon; use
 **Quit** in the page to stop it.
 
 If the app was copied from another Mac and macOS refuses to open it, run
-`xattr -dr com.apple.quarantine "NUMIDENT Viewer.app"`.
+`xattr -dr com.apple.quarantine "NUMIDENT Viewer (Web).app"`.
 
 Settings (data folder, files read at once, default match limit) are kept in
 `~/Library/Application Support/NUMIDENT Viewer/config.json`.
