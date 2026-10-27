@@ -1,0 +1,12 @@
+# Build outputs
+go/bin/
+swift/.build/
+swift/dist/
+swift/.swiftpm/
+
+# macOS
+.DS_Store
+._*
+
+# Local Claude Code settings
+.claude/settings.local.json

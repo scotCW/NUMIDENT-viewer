@@ -1,0 +1,469 @@
+import NumidentCore
+import SwiftUI
+
+struct ContentView: View {
+    @EnvironmentObject var model: AppModel
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HealthBanner()
+            Divider()
+            HSplitView {
+                SidebarView()
+                    .frame(minWidth: 300, idealWidth: 340, maxWidth: 460)
+                ResultsPane()
+                    .frame(minWidth: 520)
+            }
+        }
+        .sheet(item: $model.personRequest) { req in
+            PersonView(ssn: req.ssn)
+                .environmentObject(model)
+        }
+    }
+}
+
+// MARK: - Dataset health banner
+
+struct HealthBanner: View {
+    @EnvironmentObject var model: AppModel
+
+    var body: some View {
+        if let h = model.health {
+            if h.isComplete {
+                HStack {
+                    Image(systemName: "checkmark.circle").foregroundColor(.green)
+                    Text("\(h.headline) — \(Format.bytes(h.totalBytes)) in \(h.root)")
+                    Spacer()
+                    rescanButton
+                }
+                .font(.callout)
+                .padding(.horizontal, 12).padding(.vertical, 6)
+            } else {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.orange)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(h.headline).font(.headline)
+                            ForEach(h.problemLines.prefix(model.bannerExpanded ? 0 : 3), id: \.self) { line in
+                                Text(line).font(.callout)
+                            }
+                        }
+                        Spacer()
+                        if h.rootExists {
+                            Button(model.bannerExpanded ? "Hide details" : "Details") {
+                                model.bannerExpanded.toggle()
+                            }
+                        }
+                        rescanButton
+                    }
+                    if model.bannerExpanded && h.rootExists {
+                        HealthTable(health: h)
+                    }
+                }
+                .padding(.horizontal, 12).padding(.vertical, 8)
+                .background(Color.orange.opacity(0.15))
+            }
+        } else {
+            HStack {
+                ProgressView().controlSize(.small)
+                Text("Checking data folder…")
+                Spacer()
+            }
+            .padding(8)
+        }
+    }
+
+    private var rescanButton: some View {
+        Button {
+            model.rescan()
+        } label: {
+            if model.isScanningCatalog { ProgressView().controlSize(.small) } else { Text("Rescan") }
+        }
+        .disabled(model.isScanningCatalog)
+    }
+}
+
+struct HealthTable: View {
+    let health: DatasetHealth
+
+    var body: some View {
+        Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 4) {
+            GridRow {
+                Text("Set").bold()
+                Text("Present").bold()
+                Text("Missing").bold()
+                Text("Size").bold()
+                Text("Suspect files").bold()
+            }
+            Divider().gridCellUnsizedAxes(.horizontal)
+            ForEach(health.sets) { s in
+                GridRow {
+                    Text(s.kind.rawValue).font(.body.monospaced())
+                    Text("\(s.presentCount) / \(s.expectedCount)")
+                    Text(s.missingNumbers.isEmpty ? "—" : formatRanges(s.missingNumbers)
+                         + (s.estimatedMissingBytes > 0 ? " (~\(Format.bytes(s.estimatedMissingBytes)))" : ""))
+                        .foregroundColor(s.missingNumbers.isEmpty ? .secondary : .red)
+                    Text(Format.bytes(s.totalBytes))
+                    Text(s.suspectFiles.isEmpty ? "—" : s.suspectFiles
+                        .map { "\($0.name): \($0.problems.map(\.description).joined(separator: ", "))" }
+                        .joined(separator: "\n"))
+                        .foregroundColor(s.suspectFiles.isEmpty ? .secondary : .orange)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+        .font(.callout)
+        .padding(8)
+        .background(Color(nsColor: .textBackgroundColor).opacity(0.6))
+        .cornerRadius(6)
+    }
+}
+
+// MARK: - Sidebar: dataset selection + search form
+
+struct SidebarView: View {
+    @EnvironmentObject var model: AppModel
+
+    var body: some View {
+        GeometryReader { geo in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    DatasetSelection()
+                    SearchForm()
+                }
+                .padding(12)
+                // Pin content to the pane width so wide controls never get clipped.
+                .frame(width: geo.size.width)
+            }
+        }
+    }
+}
+
+struct DatasetSelection: View {
+    @EnvironmentObject var model: AppModel
+
+    var body: some View {
+        GroupBox("Search these record sets") {
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(DatasetKind.allCases) { kind in
+                    let set = model.health?.set(kind)
+                    let usable = model.usableFiles(kind)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Toggle(isOn: model.setBinding(kind)) {
+                            HStack {
+                                Text("\(kind.rawValue)").font(.body.monospaced())
+                                Text(kind.title).foregroundColor(.secondary)
+                                Spacer()
+                                Text("\(set?.presentCount ?? 0)/20").foregroundColor(
+                                    (set?.missingNumbers.isEmpty ?? false) ? .secondary : .orange)
+                            }
+                        }
+                        .disabled(usable.isEmpty)
+                        .help(usable.isEmpty ? (set?.summary ?? "Not available") : kind.title)
+                        if !usable.isEmpty {
+                            DisclosureGroup("Files") {
+                                FileList(kind: kind)
+                            }
+                            .font(.caption)
+                            .padding(.leading, 18)
+                        }
+                    }
+                }
+                Divider()
+                Text("\(model.selectedFiles.count) files selected · \(Format.bytes(model.selectedBytes))")
+                    .font(.caption).foregroundColor(.secondary)
+            }
+            .padding(4)
+        }
+    }
+}
+
+struct FileList: View {
+    @EnvironmentObject var model: AppModel
+    let kind: DatasetKind
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack {
+                Button("All") { model.setBinding(kind).wrappedValue = true }
+                Button("None") { model.setBinding(kind).wrappedValue = false }
+            }
+            .buttonStyle(.link)
+            ForEach(model.health?.set(kind)?.files ?? []) { f in
+                Toggle(isOn: model.fileBinding(f)) {
+                    HStack {
+                        Text(f.name).font(.caption.monospaced())
+                        Spacer()
+                        Text(Format.bytes(f.size)).foregroundColor(.secondary)
+                        if f.isSuspect {
+                            Image(systemName: "exclamationmark.triangle").foregroundColor(.orange)
+                                .help(f.problems.map(\.description).joined(separator: "\n"))
+                        }
+                    }
+                }
+                .disabled(!f.isUsable)
+            }
+            if let missing = model.health?.set(kind)?.missingNumbers, !missing.isEmpty {
+                Text("Missing: \(formatRanges(missing))").foregroundColor(.red)
+            }
+        }
+    }
+}
+
+struct SearchForm: View {
+    @EnvironmentObject var model: AppModel
+
+    private func row<V: View>(_ label: String, @ViewBuilder _ field: () -> V) -> some View {
+        GridRow {
+            Text(label).foregroundColor(.secondary).gridColumnAlignment(.trailing)
+            field()
+        }
+    }
+
+    private func header(_ title: String) -> some View {
+        GridRow {
+            Color.clear.frame(width: 1, height: 1)
+            Text(title).font(.caption.bold()).foregroundColor(.secondary).padding(.top, 4)
+        }
+    }
+
+    private func yearBinding(_ kp: WritableKeyPath<SearchQuery, Int?>) -> Binding<String> {
+        Binding(
+            get: { model.query[keyPath: kp].map(String.init) ?? "" },
+            set: { model.query[keyPath: kp] = Int($0.filter(\.isNumber)) })
+    }
+
+    var body: some View {
+        GroupBox("Search") {
+            Grid(alignment: .leading, horizontalSpacing: 8, verticalSpacing: 6) {
+                row("SSN") { TextField("", text: $model.query.ssn, prompt: Text("9 digits — instant lookup")) }
+                header("Name")
+                row("Last") { TextField("", text: $model.query.lastName) }
+                row("First") { TextField("", text: $model.query.firstName) }
+                row("Middle") { TextField("", text: $model.query.middleName) }
+                row("Match") {
+                    Picker("", selection: $model.query.nameMatch) {
+                        ForEach(NameMatch.allCases) { Text($0.title).tag($0) }
+                    }
+                    .labelsHidden()
+                }
+                row("") { Toggle("Other & signature names (SS-5)", isOn: $model.query.includeOtherNames) }
+                header("Years")
+                row("Born") {
+                    HStack {
+                        TextField("", text: yearBinding(\.dobYearFrom), prompt: Text("from"))
+                        TextField("", text: yearBinding(\.dobYearTo), prompt: Text("to"))
+                    }
+                }
+                row("Died") {
+                    HStack {
+                        TextField("", text: yearBinding(\.deathYearFrom), prompt: Text("from"))
+                        TextField("", text: yearBinding(\.deathYearTo), prompt: Text("to"))
+                    }
+                }
+                header("Birthplace")
+                row("City") { TextField("", text: $model.query.pobCity, prompt: Text("starts with")) }
+                row("State") { TextField("", text: $model.query.pobState, prompt: Text("2-letter code")) }
+                header("Parents")
+                row("Father") {
+                    HStack {
+                        TextField("", text: $model.query.fatherFirst, prompt: Text("first"))
+                        TextField("", text: $model.query.fatherLast, prompt: Text("last"))
+                    }
+                }
+                row("Mother") {
+                    HStack {
+                        TextField("", text: $model.query.motherFirst, prompt: Text("first"))
+                        TextField("", text: $model.query.motherLast, prompt: Text("maiden"))
+                    }
+                }
+                row("Sex") {
+                    Picker("", selection: $model.query.sex) {
+                        Text("Any").tag(SexFilter.any)
+                        Text("Male").tag(SexFilter.male)
+                        Text("Female").tag(SexFilter.female)
+                        Text("Unknown").tag(SexFilter.unknown)
+                    }
+                    .labelsHidden()
+                }
+            }
+            .textFieldStyle(.roundedBorder)
+            .padding(4)
+            .onSubmit { model.startSearch() }
+
+            ForEach(model.query.skippedReasons.sorted(by: { $0.key < $1.key }), id: \.key) { k, why in
+                Label("\(k.rawValue) skipped: \(why)", systemImage: "info.circle")
+                    .font(.caption).foregroundColor(.secondary)
+            }
+            if let msg = model.validationMessage {
+                Text(msg).foregroundColor(.red).font(.callout)
+            }
+            HStack {
+                Button("Clear") { model.query = SearchQuery() }
+                Spacer()
+                if model.isSearching {
+                    Button("Cancel", role: .cancel) { model.cancelSearch() }
+                        .keyboardShortcut(.escape, modifiers: [])
+                }
+                Button("Search") { model.startSearch() }
+                    .keyboardShortcut(.return, modifiers: [.command])
+                    .buttonStyle(.borderedProminent)
+                    .disabled(model.isSearching)
+            }
+            .padding(.top, 6)
+        }
+    }
+}
+
+// MARK: - Results
+
+struct ResultsPane: View {
+    @EnvironmentObject var model: AppModel
+
+    var body: some View {
+        VStack(spacing: 0) {
+            if model.isSearching || model.summary != nil {
+                ProgressPanel()
+                Divider()
+            }
+            ResultsTable()
+            Divider()
+            HStack {
+                if model.results.isEmpty {
+                    Text(model.isSearching ? "Searching…" : (model.summary == nil ? "Enter a search on the left." : "No matches."))
+                } else {
+                    Text("Showing \(min(model.visibleCount, model.results.count)) of \(model.results.count) matches")
+                }
+                Spacer()
+                if model.results.count > model.visibleCount {
+                    Button("Load \(AppModel.pageSize) more") { model.loadMore() }
+                }
+                Button("Open person") {
+                    if let id = model.selection.first, let r = model.results.first(where: { $0.id == id }) {
+                        model.openPerson(r.ssn)
+                    }
+                }
+                .disabled(model.selection.isEmpty)
+            }
+            .font(.callout)
+            .padding(8)
+        }
+    }
+}
+
+struct ProgressPanel: View {
+    @EnvironmentObject var model: AppModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            if let p = model.progress {
+                HStack {
+                    Text(model.isSearching ? (p.mode == .ssnLookup ? "SSN lookup" : "Scanning") : "Finished")
+                        .font(.headline)
+                    Spacer()
+                    if model.isSearching {
+                        Button("Cancel") { model.cancelSearch() }
+                    }
+                }
+                ProgressView(value: p.fraction) {
+                    HStack {
+                        Text(String(format: "%.1f%%", p.fraction * 100)).monospacedDigit()
+                        Text("\(Format.bytes(p.doneBytes)) of \(Format.bytes(p.totalBytes))")
+                        Text("· \(p.filesDone)/\(p.filesTotal) files")
+                        if p.bytesPerSecond > 0 && model.isSearching {
+                            Text(String(format: "· %.0f MB/s", p.bytesPerSecond / 1e6)).monospacedDigit()
+                        }
+                        if let eta = p.etaSeconds, model.isSearching { Text("· \(Format.duration(eta)) left") }
+                        Spacer()
+                        Text("\(p.matchCount) matches").bold()
+                    }
+                    .font(.callout)
+                }
+                HStack(spacing: 16) {
+                    ForEach(DatasetKind.allCases) { k in
+                        if let sp = p.perSet[k] {
+                            VStack(alignment: .leading, spacing: 2) {
+                                ProgressView(value: sp.fraction)
+                                Text("\(k.rawValue) \(Int(sp.fraction * 100))%").font(.caption)
+                            }
+                        }
+                    }
+                }
+                if model.isSearching && !p.currentFiles.isEmpty {
+                    Text("Reading: " + p.currentFiles.joined(separator: ", "))
+                        .font(.caption.monospaced()).foregroundColor(.secondary).lineLimit(1)
+                }
+            }
+            if let s = model.summary {
+                SummaryText(summary: s)
+            }
+            ForEach(model.failures, id: \.self) { f in
+                Label(f, systemImage: "xmark.octagon").foregroundColor(.red).font(.callout)
+            }
+            ForEach(model.coverageNotes, id: \.self) { n in
+                Label(n, systemImage: "info.circle").font(.caption).foregroundColor(.secondary)
+            }
+        }
+        .padding(10)
+    }
+}
+
+struct SummaryText: View {
+    let summary: SearchSummary
+
+    var body: some View {
+        let s = summary
+        var text = "\(s.matchCount) matches · \(Format.bytes(s.bytesRead)) read in \(Format.duration(s.elapsed))"
+        if s.mode == .fullScan && s.elapsed > 0 { text += String(format: " (%.0f MB/s)", s.bytesPerSecond / 1e6) }
+        if s.cancelled {
+            let done = s.outcomes.filter { $0.state == .done }.count
+            text += String(format: " — cancelled at %.0f%%; %d of %d files finished", s.totalBytes > 0
+                ? Double(s.bytesRead) / Double(s.totalBytes) * 100 : 0, done, s.outcomes.count)
+        }
+        if s.hitCap { text += " — stopped at the result limit; refine the search or raise the limit in Settings" }
+        return Text(text).font(.callout).foregroundColor(s.cancelled || s.hitCap ? .orange : .primary)
+    }
+}
+
+struct ResultsTable: View {
+    @EnvironmentObject var model: AppModel
+
+    var body: some View {
+        Table(model.visibleResults, selection: $model.selection) {
+            TableColumn("Set") { r in Text(r.kind.shortTitle) }.width(min: 40, ideal: 50, max: 60)
+            TableColumn("SSN") { r in Text(r.ssn).font(.body.monospaced()) }.width(min: 80, ideal: 90)
+            TableColumn("Name") { r in Text(r.fullName) }.width(min: 140, ideal: 220)
+            TableColumn("Born") { r in Text(r.dob.description).monospacedDigit() }.width(min: 80, ideal: 90)
+            TableColumn("Sex") { r in Text(r.sex) }.width(min: 40, ideal: 55)
+            TableColumn("Birthplace") { r in Text(r.birthplace) }.width(min: 80, ideal: 140)
+            TableColumn("Event") { r in Text(eventLabel(r)) }.width(min: 110, ideal: 150)
+            TableColumn("File") { r in Text(r.fileName).font(.caption.monospaced()).foregroundColor(.secondary) }
+                .width(min: 90, ideal: 130)
+        }
+        .contextMenu(forSelectionType: NumidentRecord.ID.self) { ids in
+            if let id = ids.first, let r = model.results.first(where: { $0.id == id }) {
+                Button("Open person \(r.ssn)") { model.openPerson(r.ssn) }
+                Button("Copy SSN") {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(r.ssn, forType: .string)
+                }
+                Button("Copy raw line") {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(r.rawLine, forType: .string)
+                }
+            }
+        } primaryAction: { ids in
+            if let id = ids.first, let r = model.results.first(where: { $0.id == id }) {
+                model.openPerson(r.ssn)
+            }
+        }
+    }
+
+    private func eventLabel(_ r: NumidentRecord) -> String {
+        switch r.kind {
+        case .ss5: return "SS-5 \(r.cycleDate)"
+        case .claim: return "Claim \(r.date("claimDate"))"
+        case .death: return "Died \(r.deathDate)"
+        }
+    }
+}

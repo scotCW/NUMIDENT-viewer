@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <title>NUMIDENT Viewer icon: three record cards, the top one with holes grouped 3-2-4</title>
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#27406f"/><stop offset="1" stop-color="#14233f"/></linearGradient>
+  </defs>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#tile)"/>
+  <!-- One card per record set: NUMSS5, NUMCLM, NUMDEATH -->
+  <path d="M294 250H874V710H214V330Z" fill="#a9a48f"/>
+  <path d="M262 282H842V742H182V362Z" fill="#cfc9b1"/>
+  <path d="M230 314H810V774H150V394Z" fill="#f5efd9"/>
+  <!-- The matched record -->
+  <rect x="150" y="500" width="660" height="88" fill="#f2a71b"/>
+  <!-- Nine columns grouped 3-2-4, the shape of an SSN -->
+  <rect x="196" y="364" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="252" y="364" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="308" y="364" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="404" y="364" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="460" y="364" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="556" y="364" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="612" y="364" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="668" y="364" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="724" y="364" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="196" y="440" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="252" y="440" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="308" y="440" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="404" y="440" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="460" y="440" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="556" y="440" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="612" y="440" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="668" y="440" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="724" y="440" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="196" y="516" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="252" y="516" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="308" y="516" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="404" y="516" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="460" y="516" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="556" y="516" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="612" y="516" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="668" y="516" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="724" y="516" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="196" y="592" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="252" y="592" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="308" y="592" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="404" y="592" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="460" y="592" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="556" y="592" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="612" y="592" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="668" y="592" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="724" y="592" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="196" y="668" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="252" y="668" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="308" y="668" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="404" y="668" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="460" y="668" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="556" y="668" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="612" y="668" width="40" height="56" rx="8" fill="#dcd5bd"/>
+  <rect x="668" y="668" width="40" height="56" rx="8" fill="#14233f"/>
+  <rect x="724" y="668" width="40" height="56" rx="8" fill="#dcd5bd"/>
+</svg>

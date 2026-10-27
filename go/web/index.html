@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>NUMIDENT Viewer</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="toolbar">
+  <div class="app-title">
+    <svg class="app-icon" viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="3" width="16" height="14" rx="3" fill="currentColor" opacity=".18"/><path d="M5 7.5h10M5 10h7M5 12.5h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    <span>NUMIDENT Viewer</span>
+  </div>
+  <span id="datadir" class="datadir mono" title=""></span>
+  <span class="spacer"></span>
+  <button type="button" id="btn-rescan" class="btn" title="Check the data folder again">Rescan</button>
+  <button type="button" id="btn-settings" class="btn" title="Settings">Settings</button>
+  <button type="button" id="btn-quit" class="btn" title="Stop the viewer">Quit</button>
+</header>
+
+<div id="banner" class="banner" hidden role="status">
+  <div class="banner-row">
+    <svg class="banner-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5 18.5 17h-17z" fill="currentColor"/><path d="M10 8v4.2M10 14.4v.1" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <strong id="banner-title">Incomplete dataset</strong>
+    <span id="banner-lines" class="banner-lines"></span>
+    <span class="spacer"></span>
+    <button type="button" id="banner-toggle" class="btn-link" aria-expanded="false">Details</button>
+  </div>
+  <div id="banner-details" class="banner-details" hidden></div>
+</div>
+
+<div class="app">
+  <aside class="sidebar">
+    <form id="search-form" autocomplete="off" novalidate>
+      <section class="side-section">
+        <h3>Datasets</h3>
+        <div id="set-boxes" class="set-list"></div>
+        <details id="file-picker" class="disclosure">
+          <summary>Individual files</summary>
+          <div id="file-lists"></div>
+        </details>
+      </section>
+
+      <section class="side-section">
+        <h3>Identity</h3>
+        <label class="field">SSN <input name="ssn" class="mono" inputmode="numeric" placeholder="123-45-6789"></label>
+        <label class="field">Last name <input name="last"></label>
+        <div class="two">
+          <label class="field">First name <input name="first"></label>
+          <label class="field">Middle <input name="middle"></label>
+        </div>
+        <div class="field">
+          <span>Name match</span>
+          <div class="segmented" role="radiogroup" aria-label="Name match">
+            <label><input type="radio" name="nameMode" value="exact" checked><span>Exact</span></label>
+            <label><input type="radio" name="nameMode" value="prefix"><span>Prefix</span></label>
+            <label><input type="radio" name="nameMode" value="soundex"><span>Soundex</span></label>
+          </div>
+        </div>
+        <label class="field">Sex
+          <select name="sex">
+            <option value="">Any</option>
+            <option value="1">Male</option>
+            <option value="2">Female</option>
+            <option value="0">Unknown</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" name="altNames"> Include other &amp; signature names (SS-5)</label>
+      </section>
+
+      <section class="side-section">
+        <h3>Dates</h3>
+        <div class="two">
+          <label class="field">Born from <input name="dobFrom" type="number" min="1700" max="2100" placeholder="year" class="mono"></label>
+          <label class="field">to <input name="dobTo" type="number" min="1700" max="2100" placeholder="year" class="mono"></label>
+        </div>
+        <div class="two">
+          <label class="field">Died from <input name="deathFrom" type="number" min="1700" max="2100" placeholder="year" class="mono"></label>
+          <label class="field">to <input name="deathTo" type="number" min="1700" max="2100" placeholder="year" class="mono"></label>
+        </div>
+        <p class="hint">A death year searches NUMDEATH and death claims only.</p>
+      </section>
+
+      <section class="side-section">
+        <h3>Birthplace</h3>
+        <div class="two wide-first">
+          <label class="field">City starts with <input name="pobCity"></label>
+          <label class="field">State <input name="pobState" maxlength="2" placeholder="NH" class="mono"></label>
+        </div>
+      </section>
+
+      <section class="side-section">
+        <h3>Parents</h3>
+        <div class="two">
+          <label class="field">Father first <input name="fatherFirst"></label>
+          <label class="field">Father last <input name="fatherLast"></label>
+        </div>
+        <div class="two">
+          <label class="field">Mother first <input name="motherFirst"></label>
+          <label class="field">Maiden name <input name="motherLast"></label>
+        </div>
+        <p class="hint">Birthplace and parents exist in SS-5 and claims only.</p>
+      </section>
+
+      <section class="side-section">
+        <h3>Options</h3>
+        <label class="field">Stop after (matches) <input name="limit" type="number" min="1" max="100000" class="mono"></label>
+      </section>
+
+      <div class="side-actions">
+        <p id="form-error" class="form-error" hidden></p>
+        <div class="row">
+          <button type="reset" id="btn-clear" class="btn">Clear</button>
+          <button type="submit" id="btn-search" class="btn primary">Search</button>
+        </div>
+      </div>
+    </form>
+  </aside>
+
+  <main class="main">
+    <section id="search-view">
+      <div id="empty" class="empty">
+        <svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="21" cy="21" r="12" fill="none" stroke="currentColor" stroke-width="3"/><path d="m30 30 9 9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+        <h2>Search the NUMIDENT files</h2>
+        <p>Enter an SSN for an instant lookup, or a name, dates, birthplace or parents to scan the files.
+          Untick datasets you don't need to make scans faster.</p>
+      </div>
+
+      <section id="progress" class="card progress-card" hidden>
+        <div class="row">
+          <strong id="prog-title">Searching…</strong>
+          <span id="prog-stats" class="stats"></span>
+          <span class="spacer"></span>
+          <button type="button" id="btn-cancel" class="btn small">Cancel</button>
+        </div>
+        <div class="bar"><div id="prog-bar"></div><div id="prog-fail" class="fail"></div></div>
+        <div id="prog-sets" class="set-bars"></div>
+        <div id="prog-current" class="muted small"></div>
+        <ul id="prog-errors" class="errors small"></ul>
+      </section>
+
+      <section id="results" class="results" hidden>
+        <div class="results-head">
+          <strong id="res-title">Results</strong>
+          <span class="spacer"></span>
+          <span class="muted small">Click a row to open the person</span>
+        </div>
+        <p id="res-limit" class="notice" hidden></p>
+        <div class="table-wrap">
+          <table id="res-table" class="grid-table">
+            <thead><tr><th>Set</th><th>SSN</th><th>Name</th><th class="num">Born</th><th>Birthplace</th><th>Sex</th><th class="num">Died</th><th>Parents</th><th>Entry</th><th class="num">Posted</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <button type="button" id="btn-more" class="btn more" hidden>Show more</button>
+      </section>
+    </section>
+
+    <section id="person-view" class="person" hidden>
+      <div class="person-bar">
+        <button type="button" id="btn-back" class="btn small">‹ Results</button>
+        <span class="muted small">Esc to close</span>
+      </div>
+      <header class="person-head">
+        <h1 id="person-title"></h1>
+        <div id="person-sub" class="person-sub mono"></div>
+      </header>
+      <section id="person-progress" class="card progress-card" hidden>
+        <div class="row"><strong id="pp-title">Looking up…</strong><span id="pp-stats" class="stats"></span><span class="spacer"></span><button type="button" id="pp-cancel" class="btn small">Cancel</button></div>
+        <div class="bar"><div id="pp-bar"></div></div>
+      </section>
+      <div id="person-body"></div>
+    </section>
+  </main>
+</div>
+
+<div id="settings" class="modal" hidden>
+  <form id="settings-form" class="modal-box" role="dialog" aria-labelledby="settings-h">
+    <h2 id="settings-h">Settings</h2>
+    <label class="field">Data folder <input name="dataDir" class="mono" required></label>
+    <p class="hint">The folder containing NUMSS5, NUMCLM and NUMDEATH, e.g. /Volumes/TranscBlura/NUMIDENT</p>
+    <label class="field">Files read at once
+      <select name="concurrency">
+        <option value="1">1 — spinning hard disk</option>
+        <option value="2">2 — USB SSD (default)</option>
+        <option value="3">3</option>
+        <option value="4">4 — fast internal or Thunderbolt SSD</option>
+      </select>
+    </label>
+    <label class="field">Default match limit <input name="resultLimit" type="number" min="1" max="100000" class="mono"></label>
+    <p id="settings-error" class="form-error" hidden></p>
+    <div class="row modal-actions"><span class="spacer"></span><button type="button" id="settings-cancel" class="btn">Cancel</button><button type="submit" class="btn primary">Save</button></div>
+  </form>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
