@@ -5,6 +5,8 @@ import NumidentCore
 ///   NUMIDENT_DATA=/path            use this data folder instead of the saved one
 ///   NUMIDENT_SEARCH_LAST=NAME      run a last-name search on launch
 ///   NUMIDENT_PERSON=SSN            open the person sheet for this SSN
+///   NUMIDENT_FILTER=WORDS          type WORDS into the results filter 1 s before the snapshot
+///   NUMIDENT_SORT=name|-name|born|-born   sort the results table 1 s before the snapshot
 ///   NUMIDENT_SNAPSHOT=/out.png     save the main window to a PNG after NUMIDENT_SNAPSHOT_DELAY seconds (default 4)
 ///   NUMIDENT_QUIT=1                quit after the snapshot
 @MainActor
@@ -35,6 +37,15 @@ enum DebugHooks {
             // Light appearance so text is legible in the cached bitmap.
             NSApp.appearance = NSAppearance(named: .aqua)
             let delay = Double(env["NUMIDENT_SNAPSHOT_DELAY"] ?? "") ?? 4
+            DispatchQueue.main.asyncAfter(deadline: .now() + max(delay - 1, 0)) {
+                if let words = env["NUMIDENT_FILTER"] { model.filterText = words }
+                if let sort = env["NUMIDENT_SORT"] {
+                    let order: SortOrder = sort.hasPrefix("-") ? .reverse : .forward
+                    model.sortOrder = sort.hasSuffix("born")
+                        ? [KeyPathComparator(\NumidentRecord.dobSortKey, order: order)]
+                        : [KeyPathComparator(\NumidentRecord.nameSortKey, order: order)]
+                }
+            }
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 snapshot(to: out)
                 if env["NUMIDENT_QUIT"] != nil { NSApp.terminate(nil) }

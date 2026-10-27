@@ -326,16 +326,21 @@ struct ResultsPane: View {
                 ProgressPanel()
                 Divider()
             }
+            ResultsFilterBar()
+            Divider()
             ResultsTable()
             Divider()
             HStack {
                 if model.results.isEmpty {
                     Text(model.isSearching ? "Searching…" : (model.summary == nil ? "Enter a search on the left." : "No matches."))
+                } else if model.isFiltered {
+                    Text("Showing \(min(model.visibleCount, model.displayed.count)) of \(model.displayed.count) filtered "
+                        + "(\(model.results.count) matches in all)")
                 } else {
                     Text("Showing \(min(model.visibleCount, model.results.count)) of \(model.results.count) matches")
                 }
                 Spacer()
-                if model.results.count > model.visibleCount {
+                if model.displayed.count > model.visibleCount {
                     Button("Load \(AppModel.pageSize) more") { model.loadMore() }
                 }
                 Button("Open person") {
@@ -429,16 +434,19 @@ struct ResultsTable: View {
     @EnvironmentObject var model: AppModel
 
     var body: some View {
-        Table(model.visibleResults, selection: $model.selection) {
-            TableColumn("Set") { r in Text(r.kind.shortTitle) }.width(min: 40, ideal: 50, max: 60)
-            TableColumn("SSN") { r in Text(r.ssn).font(.body.monospaced()) }.width(min: 80, ideal: 90)
-            TableColumn("Name") { r in Text(r.fullName) }.width(min: 140, ideal: 220)
-            TableColumn("Born") { r in Text(r.dob.description).monospacedDigit() }.width(min: 80, ideal: 90)
-            TableColumn("Sex") { r in Text(r.sex) }.width(min: 40, ideal: 55)
-            TableColumn("Birthplace") { r in Text(r.birthplace) }.width(min: 80, ideal: 140)
-            TableColumn("Event") { r in Text(eventLabel(r)) }.width(min: 110, ideal: 150)
-            TableColumn("File") { r in Text(r.fileName).font(.caption.monospaced()).foregroundColor(.secondary) }
-                .width(min: 90, ideal: 130)
+        Table(model.visibleResults, selection: $model.selection, sortOrder: $model.sortOrder) {
+            TableColumn("Set", value: \.setSortKey) { r in Text(r.kind.shortTitle) }.width(min: 40, ideal: 50, max: 60)
+            TableColumn("SSN", value: \.ssn) { r in Text(r.ssn).font(.body.monospaced()) }.width(min: 80, ideal: 90)
+            TableColumn("Name", value: \.nameSortKey) { r in Text(r.fullName) }.width(min: 140, ideal: 220)
+            TableColumn("Born", value: \.dobSortKey) { r in Text(r.dob.description).monospacedDigit() }
+                .width(min: 80, ideal: 90)
+            TableColumn("Sex", value: \.sex) { r in Text(r.sex) }.width(min: 40, ideal: 55)
+            TableColumn("Birthplace", value: \.birthplace) { r in Text(r.birthplace) }.width(min: 80, ideal: 140)
+            TableColumn("Event", value: \.eventSortKey) { r in Text(eventLabel(r)) }.width(min: 110, ideal: 150)
+            TableColumn("File", value: \.fileSortKey) { r in
+                Text(r.fileName).font(.caption.monospaced()).foregroundColor(.secondary)
+            }
+            .width(min: 90, ideal: 130)
         }
         .contextMenu(forSelectionType: NumidentRecord.ID.self) { ids in
             if let id = ids.first, let r = model.results.first(where: { $0.id == id }) {
@@ -466,4 +474,49 @@ struct ResultsTable: View {
         case .death: return "Died \(r.deathDate)"
         }
     }
+}
+
+/// Filters the results already found; ⌘F focuses it, Esc clears it.
+struct ResultsFilterBar: View {
+    @EnvironmentObject var model: AppModel
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "line.3.horizontal.decrease.circle")
+                .foregroundColor(model.isFiltered ? .accentColor : .secondary)
+            TextField("Filter results (⌘F): joe 1917 · first:joe · father:henry · place:boston", text: $model.filterText)
+                .textFieldStyle(.roundedBorder)
+                .focused($focused)
+                .onExitCommand { model.filterText = ""; focused = false }
+                .help("All words must appear. A plain word matches any field, including parents and other names. "
+                    + "Prefix a word to match one field: first: middle: last: name: father: mother: place: "
+                    + "born: died: ssn: set:")
+            if model.isFiltered {
+                Text("\(model.displayed.count) of \(model.results.count)")
+                    .font(.callout).monospacedDigit().foregroundColor(.secondary)
+                Button { model.filterText = "" } label: { Image(systemName: "xmark.circle.fill") }
+                    .buttonStyle(.borderless)
+                    .help("Clear filter")
+            }
+            // Invisible target for ⌘F.
+            Button("") { focused = true }
+                .keyboardShortcut("f", modifiers: .command)
+                .frame(width: 0, height: 0)
+                .opacity(0)
+                .accessibilityHidden(true)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+    }
+}
+
+/// Sort keys for the results table. Names sort by last, first, middle;
+/// dates by their known parts, with unknown parts first.
+extension NumidentRecord {
+    var setSortKey: String { kind.shortTitle }
+    var nameSortKey: String { "\(lastName) \(firstName) \(middleName)" }
+    var dobSortKey: Int { dob.sortKey }
+    var eventSortKey: Int { eventDate.sortKey }
+    var fileSortKey: String { "\(fileName) \(String(format: "%012lld", offset))" }
 }

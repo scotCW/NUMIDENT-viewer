@@ -36,6 +36,12 @@ final class AppModel: ObservableObject {
     @Published var searchedFiles: [CatalogFile] = []
     @Published var selection = Set<NumidentRecord.ID>()
 
+    // Filtering and sorting of the results already found (no new disk reads)
+    @Published var filterText = "" { didSet { refreshDisplayed() } }
+    @Published var sortOrder: [KeyPathComparator<NumidentRecord>] = [] { didSet { refreshDisplayed() } }
+    @Published private(set) var displayed: [NumidentRecord] = []
+    private var haystacks: [NumidentRecord.ID: FilterText] = [:]
+
     // Person sheet
     @Published var personRequest: PersonRequest?
     @Published var person: PersonSummary?
@@ -139,6 +145,9 @@ final class AppModel: ObservableObject {
         searchHandle?.cancel()
         searchTask?.cancel()
         results = []
+        haystacks = [:]
+        filterText = ""
+        refreshDisplayed()
         selection = []
         visibleCount = Self.pageSize
         summary = nil
@@ -158,6 +167,8 @@ final class AppModel: ObservableObject {
                 case .matches(let m):
                     // Events arrive at most ~4×/s, so the table redraws at that rate.
                     self.results.append(contentsOf: m)
+                    for r in m { self.haystacks[r.id] = FilterText(r) }
+                    self.refreshDisplayed()
                 case .fileFailed(let name, let message):
                     self.failures.append("\(name): \(message)")
                 case .finished(let s):
@@ -175,7 +186,20 @@ final class AppModel: ObservableObject {
 
     func loadMore() { visibleCount += Self.pageSize }
 
-    var visibleResults: [NumidentRecord] { Array(results.prefix(visibleCount)) }
+    var visibleResults: [NumidentRecord] { Array(displayed.prefix(visibleCount)) }
+
+    var isFiltered: Bool { !filterText.trimmingCharacters(in: .whitespaces).isEmpty }
+
+    /// Applies the filter words (all must appear, any order, any case) and the
+    /// column sort to every result found so far, not just the visible page.
+    private func refreshDisplayed() {
+        let terms = FilterText.terms(filterText)
+        var rows = terms.isEmpty ? results : results.filter { r in
+            haystacks[r.id]?.matches(terms) ?? false
+        }
+        if !sortOrder.isEmpty { rows.sort(using: sortOrder) }
+        displayed = rows
+    }
 
     var coverageNotes: [String] {
         Coverage.notes(health: health, searched: searchedFiles.isEmpty ? selectedFiles : searchedFiles,
@@ -221,6 +245,51 @@ final class AppModel: ObservableObject {
         if panel.runModal() == .OK, let url = panel.url {
             dataFolder = url.path
             rescan()
+        }
+    }
+}
+
+/// What the results filter matches against. A bare word matches anywhere in the
+/// record (decoded fields plus the raw line, so other/signature names and raw
+/// MMDDCCYY dates count); `field:word` matches only that field.
+struct FilterText {
+    static let fieldNames = ["first", "middle", "last", "name", "father", "mother", "place",
+                             "born", "died", "ssn", "set"]
+
+    let all: String
+    let fields: [String: String]
+
+    init(_ r: NumidentRecord) {
+        var f: [String: String] = [
+            "first": r.firstName, "middle": r.middleName, "last": r.lastName, "name": r.fullName,
+            "father": r.fatherName, "mother": r.motherName, "place": r.birthplace,
+            "born": r.dob.description,
+            "died": r.deathDate.description, "ssn": r.ssn, "set": r.kind.shortTitle,
+        ]
+        for (k, v) in f { f[k] = v.uppercased() }
+        fields = f
+        all = (f.values.joined(separator: " ") + " " + r.rawLine).uppercased()
+    }
+
+    /// Splits the filter into (field, word) terms; field is nil for a bare word.
+    static func terms(_ text: String) -> [(field: String?, word: String)] {
+        text.split(whereSeparator: \.isWhitespace).compactMap { token in
+            let t = String(token)
+            if let colon = t.firstIndex(of: ":") {
+                let field = t[..<colon].lowercased()
+                let word = t[t.index(after: colon)...].uppercased()
+                if fieldNames.contains(field) {
+                    return word.isEmpty ? nil : (field, word)
+                }
+            }
+            return (nil, t.uppercased())
+        }
+    }
+
+    func matches(_ terms: [(field: String?, word: String)]) -> Bool {
+        terms.allSatisfy { t in
+            guard let field = t.field else { return all.contains(t.word) }
+            return fields[field]?.contains(t.word) ?? false
         }
     }
 }

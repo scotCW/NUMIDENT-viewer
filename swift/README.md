@@ -75,6 +75,16 @@ swift run NumidentViewer
    4 MB chunk and keeps the matches found so far; the summary says how far the search got.
    A search stops at a result limit (10,000 by default, set in Settings); the table shows
    500 rows at a time with *Load more*.
+
+   Click any column header to sort all results (names sort by last, first, middle; dates by
+   their known parts). To narrow the results without reading the drive again, press ⌘F and
+   type words into the filter bar above the table:
+   - every word must appear, in any order and any case;
+   - a plain word matches anywhere in the record, including parents' and other names;
+   - a prefix limits a word to one field: `first:` `middle:` `last:` `name:` `father:`
+     `mother:` `place:` `born:` `died:` `ssn:` `set:`. For example, `first:joe born:191`.
+
+   Esc clears the filter.
 6. **Person view.** Double-click a row (or select it and click *Open person*) to look up
    that SSN in every selected file. The view shows:
    - names, dates of birth, sex, birthplace, parents and death dates, each with the
