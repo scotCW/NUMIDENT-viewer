@@ -509,14 +509,10 @@ struct ResultsTable: View {
         .contextMenu(forSelectionType: NumidentRecord.ID.self) { ids in
             if let id = ids.first, let r = model.results.first(where: { $0.id == id }) {
                 Button("Open person \(r.ssn)") { model.openPerson(r.ssn) }
-                Button("Copy SSN") {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(r.ssn, forType: .string)
-                }
-                Button("Copy raw line") {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(r.rawLine, forType: .string)
-                }
+                Button("Copy SSN") { Pasteboard.copy(r.ssn) }
+                Button("Copy citation (Gramps)") { Pasteboard.copy(r.grampsCitation) }
+                Button("Copy file name") { Pasteboard.copy(r.fileName) }
+                Button("Copy raw line") { Pasteboard.copy(r.rawLine) }
             }
         } primaryAction: { ids in
             if let id = ids.first, let r = model.results.first(where: { $0.id == id }) {

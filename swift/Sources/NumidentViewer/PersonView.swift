@@ -102,6 +102,11 @@ struct PersonDetail: View {
                                     Text(PersonSummary.label(r))
                                     Text(r.fullName).foregroundColor(.secondary)
                                 }
+                                .contextMenu {
+                                    Button("Copy citation (Gramps)") { Pasteboard.copy(r.grampsCitation) }
+                                    Button("Copy file name") { Pasteboard.copy(r.fileName) }
+                                    Button("Copy raw line") { Pasteboard.copy(r.rawLine) }
+                                }
                             }
                         }
                     }
@@ -147,10 +152,22 @@ struct FactRow: View {
 /// Every field of one record plus the raw line with alternating field highlights.
 struct RecordDetail: View {
     let record: NumidentRecord
+    @State private var copied: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("\(record.fileName) · byte offset \(record.offset)").font(.caption).foregroundColor(.secondary)
+            HStack(spacing: 8) {
+                Text(verbatim: "\(record.fileName) @ \(record.offset)")
+                    .font(.caption.monospaced())
+                    .textSelection(.enabled)
+                    .help("File name and byte offset of this record")
+                Spacer()
+                copyButton("Copy citation", record.grampsCitation,
+                           help: "Copies “\(record.grampsCitation)” for the Gramps citation's Volume/Page")
+                copyButton("Copy file name", record.fileName, help: "Copies “\(record.fileName)”")
+                copyButton("Copy raw line", record.rawLine, help: "Copies the whole record as NARA released it")
+            }
+            .font(.caption)
             RawLineView(record: record)
             let fields = Layouts.fields(for: record.kind).filter { !record.value($0).isEmpty }
             Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 2) {
@@ -165,6 +182,35 @@ struct RecordDetail: View {
             }
         }
         .padding(.vertical, 4)
+    }
+
+    private func copyButton(_ title: String, _ text: String, help: String) -> some View {
+        Button {
+            Pasteboard.copy(text)
+            copied = title
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { if copied == title { copied = nil } }
+        } label: {
+            Label(copied == title ? "Copied" : title, systemImage: copied == title ? "checkmark" : "doc.on.doc")
+        }
+        .buttonStyle(.borderless)
+        .help(help)
+    }
+}
+
+enum Pasteboard {
+    static func copy(_ s: String) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(s, forType: .string)
+    }
+}
+
+extension NumidentRecord {
+    /// Where this record is, in the form the Gramps NUMIDENT forms pre-fill for the citation's
+    /// Volume/Page: `Reference No.: 65008336075, File: NUMCLM01_PU.txt @ 2500`. The number after `@`
+    /// is the byte offset; some death records have no reference number, which reads `none`.
+    var grampsCitation: String {
+        let ref = value("ref")
+        return "Reference No.: \(ref.isEmpty ? "none" : ref), File: \(fileName) @ \(offset)"
     }
 }
 

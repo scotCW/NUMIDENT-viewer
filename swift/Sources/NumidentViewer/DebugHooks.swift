@@ -31,7 +31,15 @@ enum DebugHooks {
             }
         }
         if let ssn = env["NUMIDENT_PERSON"] {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { model.openPerson(ssn) }
+            // Wait for the data folder scan, or the lookup has no files to search.
+            func open() {
+                if model.health == nil || model.isScanningCatalog {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { open() }
+                } else {
+                    model.openPerson(ssn)
+                }
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { open() }
         }
         if let out = env["NUMIDENT_SNAPSHOT"] {
             // Light appearance so text is legible in the cached bitmap.
@@ -48,7 +56,8 @@ enum DebugHooks {
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 snapshot(to: out)
-                if env["NUMIDENT_QUIT"] != nil { NSApp.terminate(nil) }
+                // exit, not terminate: an open sheet can block terminate.
+                if env["NUMIDENT_QUIT"] != nil { exit(0) }
             }
         }
     }
