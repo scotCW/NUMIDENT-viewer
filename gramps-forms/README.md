@@ -28,9 +28,15 @@ see `gramps60.log` in the Gramps user folder.
 2. On the source's **Attributes** tab add an attribute named `Form` whose value
    is the form id: `NUMSS5`, `NUMCLM` or `NUMDEATH`.
 3. Open the person, go to the **Form** gramplet, click **New**, and pick the source.
-4. Put the record's SSN and reference number in the citation's Volume/Page
-   (the form pre-fills `SSN: , Reference No.: `), fill in the fields, and
+4. Fill in the citation's Volume/Page with where the record is: the form
+   pre-fills `Reference No.: , File: `, e.g.
+   `Reference No.: 65008336075, File: NUMCLM01_PU.txt @ 2500` (the viewer
+   shows the file and position for each result). Then fill in the fields and
    select the people for the Father and Mother sections.
+
+The citation says *where* the record is; the form fields say *what* it records.
+The SSN goes only in the person's Social Security Number field: one person can
+have several records under the same SSN, so it doesn't identify a record.
 
 ## Entering values
 
@@ -41,8 +47,6 @@ see `gramps60.log` in the Gramps user folder.
   is blank.
 - **Names, places, SSN, ZIP codes, field office code**: exactly as recorded.
 - **Dates**: readable, noting unknown parts, e.g. `1974-06 (day not recorded)`.
-- **Data File**: the file and record position the viewer shows,
-  e.g. `NUMDEATH01_PU.TXT @ 0`.
 - **The original codes**: in the viewer, right-click the result, choose
   *Copy raw line*, and paste it into a note on the citation. That keeps the
   complete record as NARA released it.

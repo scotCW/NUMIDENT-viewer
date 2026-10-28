@@ -30,10 +30,7 @@
 <!--
  NUMIDENT SS-5 application
 -->
-    <form id='NUMSS5' type='Social Security Application' title='NUMIDENT SS-5 Application' reference='SSN: , Reference No.: '>
-        <heading>
-            <_attribute>Reference Number</_attribute>
-        </heading>
+    <form id='NUMSS5' type='Social Security Application' title='NUMIDENT SS-5 Application' reference='Reference No.: , File: '>
         <heading>
             <_attribute>Date Posted</_attribute>
         </heading>
@@ -54,9 +51,6 @@
         </heading>
         <heading>
             <_attribute>Card Printed</_attribute>
-        </heading>
-        <heading>
-            <_attribute>Data File</_attribute>
         </heading>
         <section role='Primary' type='person' title='Number Holder'>
             <column>
@@ -114,10 +108,7 @@
 <!--
  NUMIDENT claim record
 -->
-    <form id='NUMCLM' type='Social Security Claim' title='NUMIDENT Claim Record' reference='SSN: , Reference No.: '>
-        <heading>
-            <_attribute>Reference Number</_attribute>
-        </heading>
+    <form id='NUMCLM' type='Social Security Claim' title='NUMIDENT Claim Record' reference='Reference No.: , File: '>
         <heading>
             <_attribute>Date Posted</_attribute>
         </heading>
@@ -136,9 +127,6 @@
         </heading>
         <heading>
             <_attribute>Field Office Address</_attribute>
-        </heading>
-        <heading>
-            <_attribute>Data File</_attribute>
         </heading>
         <section role='Primary' type='person' title='Number Holder'>
             <column>
@@ -180,10 +168,7 @@
 <!--
  NUMIDENT death record
 -->
-    <form id='NUMDEATH' type='Social Security Death Record' title='NUMIDENT Death Record' reference='SSN: , Reference No.: '>
-        <heading>
-            <_attribute>Reference Number</_attribute>
-        </heading>
+    <form id='NUMDEATH' type='Social Security Death Record' title='NUMIDENT Death Record' reference='Reference No.: , File: '>
         <heading>
             <_attribute>Date Posted</_attribute>
         </heading>
@@ -193,9 +178,6 @@
         <heading>
             <_attribute>Other Death Postings</_attribute>
             <_longname>Postings 2 and 3, where they differ from the first</_longname>
-        </heading>
-        <heading>
-            <_attribute>Data File</_attribute>
         </heading>
         <section role='Primary' type='person' title='Deceased'>
             <column>
