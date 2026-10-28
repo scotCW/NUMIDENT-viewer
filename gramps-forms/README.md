@@ -32,6 +32,25 @@ see `gramps60.log` in the Gramps user folder.
    (the form pre-fills `SSN: , Reference No.: `), fill in the fields, and
    select the people for the Father and Mother sections.
 
+## Entering values
+
+- **Coded fields** (sex, race, entry, form used, evidence, citizenship, signed
+  by, claim type, source and proof of death, programs): enter the meaning,
+  e.g. `White`, not `1`. The NUMIDENT viewer's person view decodes every code.
+  Enter `Unknown` for an unknown code, and leave a field empty when the record
+  is blank.
+- **Names, places, SSN, ZIP codes, field office code**: exactly as recorded.
+- **Dates**: readable, noting unknown parts, e.g. `1974-06 (day not recorded)`.
+- **Data File**: the file and record position the viewer shows,
+  e.g. `NUMDEATH01_PU.TXT @ 0`.
+- **The original codes**: in the viewer, right-click the result, choose
+  *Copy raw line*, and paste it into a note on the citation. That keeps the
+  complete record as NARA released it.
+
+Code meanings can depend on the date. For example, the SS-5's race choices
+were expanded around 1980, so `Other` on an early application can cover groups
+with their own code later. The form's Date Posted shows which applied.
+
 Each form makes its own event type rather than a standard one, as the Form
 addon recommends: the addon manages every event of a form's type, so using
 Death could overwrite existing death events. Add the actual birth or death as
