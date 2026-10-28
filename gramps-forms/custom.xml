@@ -1,0 +1,248 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<forms>
+<!--
+    NUMIDENT forms for the Gramps Form addon.
+
+    One form per record set in NARA's public-use NUMIDENT release
+    (Record Group 47, Social Security Administration):
+      NUMSS5   - SS-5 application or change of identifying information
+      NUMCLM   - Life or death benefit claim
+      NUMDEATH - Death record
+
+    Field names and codes follow NARA's record layouts
+    (rg047_num_ss5_layout.pdf, rg047_num_claim_layout.pdf,
+    rg047_num_dth_layout.pdf). "Number holder" (NH) is SSA's term for the
+    person the Social Security Number belongs to.
+
+    Install: copy this file into the Form addon's folder as custom.xml
+    (gramps60/plugins/Form/custom.xml), then restart Gramps. To use a form,
+    give the source a source attribute "Form" whose value is the form id
+    (NUMSS5, NUMCLM or NUMDEATH).
+
+    Each form creates its own event type rather than a standard one (the
+    Form addon manages every event of a form's type, so a standard type such
+    as Death could be overwritten). Record the actual birth or death as a
+    normal Gramps event citing the same source.
+
+    Once data has been entered, do not rename any _attribute: Gramps stores
+    the values under these exact names.
+-->
+<!--
+ NUMIDENT SS-5 application
+-->
+    <form id='NUMSS5' type='Social Security Application' title='NUMIDENT SS-5 Application' reference='SSN: , Reference No.: '>
+        <heading>
+            <_attribute>Reference Number</_attribute>
+        </heading>
+        <heading>
+            <_attribute>Date Posted</_attribute>
+        </heading>
+        <heading>
+            <_attribute>Entry Code</_attribute>
+        </heading>
+        <heading>
+            <_attribute>Form Code</_attribute>
+        </heading>
+        <heading>
+            <_attribute>Field Office Code</_attribute>
+        </heading>
+        <heading>
+            <_attribute>Evidence Code</_attribute>
+        </heading>
+        <heading>
+            <_attribute>Citizenship Code</_attribute>
+        </heading>
+        <heading>
+            <_attribute>Card Printed</_attribute>
+        </heading>
+        <heading>
+            <_attribute>Data File</_attribute>
+        </heading>
+        <section role='Primary' type='person' title='Number Holder'>
+            <column>
+                <_attribute>Name</_attribute>
+                <_longname>Name on the SSN card</_longname>
+            </column>
+            <column>
+                <_attribute>Social Security Number</_attribute>
+            </column>
+            <column>
+                <_attribute>Sex</_attribute>
+            </column>
+            <column>
+                <_attribute>Race</_attribute>
+                <_longname>Race/ethnicity code (0 unknown, 1 White, 2 Black, 3 Other, 4 Asian, 5 Hispanic, 6 North American native)</_longname>
+            </column>
+            <column>
+                <_attribute>Birth Date</_attribute>
+            </column>
+            <column>
+                <_attribute>Birthplace</_attribute>
+                <_longname>Place of birth (city and state or country)</_longname>
+            </column>
+            <column>
+                <_attribute>Foreign Born</_attribute>
+            </column>
+            <column>
+                <_attribute>Other Name Used</_attribute>
+            </column>
+            <column>
+                <_attribute>Signature Name</_attribute>
+                <_longname>Name as signed on the application</_longname>
+            </column>
+            <column>
+                <_attribute>Signed By</_attribute>
+                <_longname>Who signed the application (signature code)</_longname>
+            </column>
+            <column>
+                <_attribute>Prior Birth Date</_attribute>
+                <_longname>Date of birth previously on record, when it was corrected</_longname>
+            </column>
+        </section>
+        <section role='Father' type='person' title='Father'>
+            <column>
+                <_attribute>Name</_attribute>
+            </column>
+        </section>
+        <section role='Mother' type='person' title='Mother'>
+            <column>
+                <_attribute>Name</_attribute>
+                <_longname>Mother&apos;s name (usually maiden name)</_longname>
+            </column>
+        </section>
+    </form>
+<!--
+ NUMIDENT claim record
+-->
+    <form id='NUMCLM' type='Social Security Claim' title='NUMIDENT Claim Record' reference='SSN: , Reference No.: '>
+        <heading>
+            <_attribute>Reference Number</_attribute>
+        </heading>
+        <heading>
+            <_attribute>Date Posted</_attribute>
+        </heading>
+        <heading>
+            <_attribute>Claim Type</_attribute>
+            <_longname>Claim type (L life claim, D death claim)</_longname>
+        </heading>
+        <heading>
+            <_attribute>Claim Date</_attribute>
+        </heading>
+        <heading>
+            <_attribute>Date of Onset</_attribute>
+        </heading>
+        <heading>
+            <_attribute>Field Office Code</_attribute>
+        </heading>
+        <heading>
+            <_attribute>Field Office Address</_attribute>
+        </heading>
+        <heading>
+            <_attribute>Data File</_attribute>
+        </heading>
+        <section role='Primary' type='person' title='Number Holder'>
+            <column>
+                <_attribute>Name</_attribute>
+            </column>
+            <column>
+                <_attribute>Social Security Number</_attribute>
+            </column>
+            <column>
+                <_attribute>Sex</_attribute>
+            </column>
+            <column>
+                <_attribute>Birth Date</_attribute>
+            </column>
+            <column>
+                <_attribute>Birthplace</_attribute>
+                <_longname>Place of birth (city and state or country)</_longname>
+            </column>
+            <column>
+                <_attribute>Foreign Born</_attribute>
+            </column>
+            <column>
+                <_attribute>Death Date</_attribute>
+                <_longname>Date of death from the claim</_longname>
+            </column>
+        </section>
+        <section role='Father' type='person' title='Father'>
+            <column>
+                <_attribute>Name</_attribute>
+            </column>
+        </section>
+        <section role='Mother' type='person' title='Mother'>
+            <column>
+                <_attribute>Name</_attribute>
+                <_longname>Mother&apos;s name (usually maiden name)</_longname>
+            </column>
+        </section>
+    </form>
+<!--
+ NUMIDENT death record
+-->
+    <form id='NUMDEATH' type='Social Security Death Record' title='NUMIDENT Death Record' reference='SSN: , Reference No.: '>
+        <heading>
+            <_attribute>Reference Number</_attribute>
+        </heading>
+        <heading>
+            <_attribute>Date Posted</_attribute>
+        </heading>
+        <heading>
+            <_attribute>Number of Death Postings</_attribute>
+        </heading>
+        <heading>
+            <_attribute>Other Death Postings</_attribute>
+            <_longname>Postings 2 and 3, where they differ from the first</_longname>
+        </heading>
+        <heading>
+            <_attribute>Data File</_attribute>
+        </heading>
+        <section role='Primary' type='person' title='Deceased'>
+            <column>
+                <_attribute>Name</_attribute>
+            </column>
+            <column>
+                <_attribute>Social Security Number</_attribute>
+            </column>
+            <column>
+                <_attribute>Sex</_attribute>
+            </column>
+            <column>
+                <_attribute>Birth Date</_attribute>
+            </column>
+            <column>
+                <_attribute>Death Date</_attribute>
+            </column>
+            <column>
+                <_attribute>Residence ZIP</_attribute>
+                <_longname>ZIP code of last residence</_longname>
+            </column>
+            <column>
+                <_attribute>Lump Sum ZIP</_attribute>
+                <_longname>ZIP code where the lump-sum death payment was sent</_longname>
+            </column>
+            <column>
+                <_attribute>Source of Death</_attribute>
+                <_longname>Who reported the death (source code)</_longname>
+            </column>
+            <column>
+                <_attribute>Proof of Death</_attribute>
+            </column>
+            <column>
+                <_attribute>Verified Electronically</_attribute>
+                <_longname>Verified electronic death registration</_longname>
+            </column>
+            <column>
+                <_attribute>Death Certificate Number</_attribute>
+            </column>
+            <column>
+                <_attribute>Claim Account Number</_attribute>
+                <_longname>Other number: claim account number (Title II) or housed-under number (Title XVI)</_longname>
+            </column>
+            <column>
+                <_attribute>Programs</_attribute>
+                <_longname>SSA programs the person was in (program involvement code)</_longname>
+            </column>
+        </section>
+    </form>
+</forms>
