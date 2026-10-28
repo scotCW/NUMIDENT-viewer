@@ -238,7 +238,8 @@ public enum Layouts {
             FieldDef(k + "suffix", "Suffix", 90 + o, 93 + o, group: g),
             FieldDef(k + "dob", "Date of birth", 97 + o, 104 + o, .dateMDY, group: g),
             FieldDef(k + "sex", "Sex", 105 + o, 105 + o, codes: Codes.sex, group: g),
-            FieldDef(k + "otherNum", "Other number (CAN/HUN)", 107 + o, 115 + o, group: g),
+            // NARA's "individual's other number"; named to match the Gramps NUMDEATH form.
+            FieldDef(k + "otherNum", "Claim account number (CAN/HUN)", 107 + o, 115 + o, group: g),
             FieldDef(k + "recordId", "Record ID code", 116 + o, 116 + o, codes: Codes.recordId, group: g),
             FieldDef(k + "proof", "Proof of death", 117 + o, 117 + o, codes: Codes.proofOfDeath, group: g),
             FieldDef(k + "program", "Program involvement", 118 + o, 118 + o, codes: Codes.program, group: g),
