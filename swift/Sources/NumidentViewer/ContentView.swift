@@ -129,6 +129,7 @@ struct SidebarView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     DatasetSelection()
+                    IndexPanel()
                     SearchForm()
                 }
                 .padding(12)
@@ -174,6 +175,63 @@ struct DatasetSelection: View {
                     .font(.caption).foregroundColor(.secondary)
             }
             .padding(4)
+        }
+    }
+}
+
+/// The optional last-name index: built only when the user asks, used only while switched on.
+struct IndexPanel: View {
+    @EnvironmentObject var model: AppModel
+    @State private var confirmBuild = false
+
+    var body: some View {
+        GroupBox("Last-name index") {
+            VStack(alignment: .leading, spacing: 6) {
+                if let p = model.indexBuild {
+                    ProgressView(value: p.fraction)
+                    HStack {
+                        Text(String(format: "%.0f%%", p.fraction * 100)).monospacedDigit()
+                        if !p.currentFile.isEmpty { Text(p.currentFile).font(.caption.monospaced()) }
+                        if let eta = p.etaSeconds { Text("· \(Format.duration(eta)) left") }
+                        Spacer()
+                        Button("Cancel") { model.cancelIndexBuild() }
+                    }
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                } else if let idx = model.lastNameIndex {
+                    Toggle("Use for last-name searches", isOn: Binding(
+                        get: { model.useLastNameIndex }, set: { model.useLastNameIndex = $0 }))
+                    let cov = model.indexCoverage
+                    Text("Built \(idx.manifest.built.formatted(date: .abbreviated, time: .shortened)) · "
+                        + "\(idx.surnameCount.formatted()) surnames · covers \(cov.covered) of \(cov.total) files")
+                        .font(.caption).foregroundColor(.secondary)
+                    if cov.covered < cov.total {
+                        Label("\(cov.total - cov.covered) files were added or changed since; searches read them in full. "
+                              + "Rebuild to include them.", systemImage: "exclamationmark.triangle")
+                            .font(.caption).foregroundColor(.orange)
+                    }
+                    Button("Rebuild index…") { confirmBuild = true }
+                        .disabled(model.isSearching)
+                } else {
+                    Text("Not built. Last-name searches read every file.")
+                        .font(.caption).foregroundColor(.secondary)
+                    Button("Build index…") { confirmBuild = true }
+                        .disabled(model.isSearching || !(model.health?.rootExists ?? false))
+                }
+                if let e = model.indexError {
+                    Label(e, systemImage: "xmark.octagon").font(.caption).foregroundColor(.red)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(4)
+        }
+        .confirmationDialog("Build the last-name index?", isPresented: $confirmBuild) {
+            Button(model.lastNameIndex == nil ? "Build" : "Rebuild") { model.buildIndex() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This reads every file once (about as long as one full search) and writes about 0.5 GB to "
+                + "\(LastNameIndex.folderName) in the data folder. Searching is unavailable until it finishes. "
+                + "Afterwards, searches with a last name read only matching records.")
         }
     }
 }
@@ -363,7 +421,7 @@ struct ProgressPanel: View {
         VStack(alignment: .leading, spacing: 6) {
             if let p = model.progress {
                 HStack {
-                    Text(model.isSearching ? (p.mode == .ssnLookup ? "SSN lookup" : "Scanning") : "Finished")
+                    Text(model.isSearching ? (p.mode == .ssnLookup ? "SSN lookup" : p.mode == .indexLookup ? "Index lookup" : "Scanning") : "Finished")
                         .font(.headline)
                     Spacer()
                     if model.isSearching {

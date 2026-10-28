@@ -9,18 +9,24 @@ public struct SearchOptions: Sendable {
     /// Progress (and batched match) events per second ≈ 1 / interval.
     public var progressInterval: Double = 0.25
     public var chunkSize: Int = 4 << 20
+    /// When set, searches with a last name read only the indexed candidates of covered files.
+    public var lastNameIndex: LastNameIndex?
 
-    public init(concurrency: Int = 2, resultCap: Int = 10_000, progressInterval: Double = 0.25, chunkSize: Int = 4 << 20) {
+    public init(concurrency: Int = 2, resultCap: Int = 10_000, progressInterval: Double = 0.25, chunkSize: Int = 4 << 20,
+                lastNameIndex: LastNameIndex? = nil) {
         self.concurrency = concurrency
         self.resultCap = resultCap
         self.progressInterval = progressInterval
         self.chunkSize = chunkSize
+        self.lastNameIndex = lastNameIndex
     }
 }
 
 public enum SearchMode: Sendable {
     case fullScan
     case ssnLookup
+    /// Every file was served by the last-name index (no full scans).
+    case indexLookup
 }
 
 public struct SetProgress: Sendable {
@@ -296,8 +302,14 @@ public enum SearchEngine {
                     continuation: AsyncStream<SearchEvent>.Continuation) async {
         let applicable = query.applicableKinds
         let skipped = query.skippedReasons.filter { k, _ in files.contains { $0.kind == k } }
-        let targets = files.filter { applicable.contains($0.kind) && $0.isUsable }
-        let mode: SearchMode = query.hasValidSSN ? .ssnLookup : .fullScan
+        var targets = files.filter { applicable.contains($0.kind) && $0.isUsable }
+        var mode: SearchMode = query.hasValidSSN ? .ssnLookup : .fullScan
+        let plan = mode == .fullScan ? indexPlan(query, targets: targets, index: options.lastNameIndex) : [:]
+        if !plan.isEmpty {
+            // Index-served files finish in moments; do them first so results appear at once.
+            targets = targets.filter { plan[$0.path] != nil } + targets.filter { plan[$0.path] == nil }
+            if plan.count == targets.count { mode = .indexLookup }
+        }
         let state = SearchState(files: targets, cap: max(1, options.resultCap), mode: mode, chunkSize: options.chunkSize,
                                 concurrency: options.concurrency, cancel: token)
         let compiled = CompiledQuery(query)
@@ -317,12 +329,14 @@ public enum SearchEngine {
         await withTaskCancellationHandler {
             await withTaskGroup(of: Void.self) { group in
                 var queue = targets.makeIterator()
-                let width = mode == .ssnLookup ? max(options.concurrency, 8) : max(1, options.concurrency)
+                // Lookups (SSN or index) run many files at once; full scans still wait for a scan slot.
+                let width = mode == .ssnLookup || !plan.isEmpty ? max(options.concurrency, 8) : max(1, options.concurrency)
                 func addNext() -> Bool {
                     guard !state.cancel.isCancelled, let f = queue.next() else { return false }
+                    let candidates = plan[f.path]
                     group.addTask {
                         await process(f, mode: mode, compiled: compiled, state: state, options: options,
-                                      continuation: continuation)
+                                      candidates: candidates, continuation: continuation)
                     }
                     return true
                 }
@@ -342,13 +356,54 @@ public enum SearchEngine {
         continuation.finish()
     }
 
+    /// Estimated cost of one random record read, in bytes of sequential reading: when a file has more
+    /// candidates than `size / fetchCost`, scanning it straight through is faster than fetching each.
+    nonisolated(unsafe) static var fetchCost: Int64 = 50_000
+
+    /// Byte offsets of each file's last-name candidates, for the target files the index covers and
+    /// where fetching them beats scanning. Empty when the index can't help.
+    static func indexPlan(_ query: SearchQuery, targets: [CatalogFile], index: LastNameIndex?) -> [String: [Int64]] {
+        guard let index, !SearchQuery.clean(query.lastName).isEmpty,
+              let groups = try? index.candidates(lastName: query.lastName, mode: query.nameMatch) else { return [:] }
+        var plan: [String: [Int64]] = [:]
+        for f in targets {
+            guard let n = index.fileNumber(for: f) else { continue }
+            let offsets = groups[n] ?? []
+            if Int64(offsets.count) <= f.size / fetchCost { plan[f.path] = offsets }
+        }
+        return plan
+    }
+
+    /// Reads just the records at `offsets` (ascending) and runs the full matcher on each.
+    static func fetch(_ f: CatalogFile, offsets: [Int64], compiled: CompiledQuery, state: SearchState) throws {
+        let fd = open(f.path, O_RDONLY)
+        guard fd >= 0 else { throw ScanError.open(f.path, errno) }
+        defer { close(fd) }
+        var buf = [UInt8](repeating: 0, count: f.kind.lineLength)
+        for (i, off) in offsets.enumerated() {
+            if i & 63 == 0 && state.cancel.isCancelled { throw ScanError.cancelled }
+            let n = buf.withUnsafeMutableBytes { pread(fd, $0.baseAddress, $0.count, off_t(off)) }
+            guard n == buf.count else { throw ScanError.read(f.path, n < 0 ? errno : EIO) }
+            state.addBytes(f, n)
+            let r = NumidentRecord(kind: f.kind, fileName: f.name, offset: off, bytes: buf)
+            if compiled.matches(r) && !state.addMatch(r) { return }
+        }
+    }
+
     /// Runs one file's blocking I/O on the I/O queue and records its outcome.
     static func process(_ f: CatalogFile, mode: SearchMode, compiled: CompiledQuery, state: SearchState,
-                        options: SearchOptions, continuation: AsyncStream<SearchEvent>.Continuation) async {
+                        options: SearchOptions, candidates: [Int64]?,
+                        continuation: AsyncStream<SearchEvent>.Continuation) async {
         await withCheckedContinuation { (done: CheckedContinuation<Void, Never>) in
             ioQueue.async {
                 defer { done.resume() }
                 do {
+                    if let candidates {
+                        state.begin(f, method: "last-name index (\(candidates.count) candidates)")
+                        try fetch(f, offsets: candidates, compiled: compiled, state: state)
+                        state.finish(f, .done, countAsDone: true)
+                        return
+                    }
                     if mode == .ssnLookup, let ssn = compiled.ssnBytes {
                         state.begin(f, method: "binary search")
                         if let result = try SSNIndex.lookup(path: f.path, kind: f.kind, ssn: ssn, cancel: state.cancel) {

@@ -1,7 +1,7 @@
 import Foundation
 import NumidentCore
 
-// Command-line front end to NumidentCore: health report, search, SSN lookup, benchmark.
+// Command-line front end to NumidentCore: health report, search, SSN lookup, benchmark, last-name index.
 
 func usage() -> Never {
     FileHandle.standardError.write("""
@@ -12,8 +12,10 @@ func usage() -> Never {
                    [--other-names] [--dob-from Y] [--dob-to Y] [--death-from Y] [--death-to Y]
                    [--city X] [--state XX] [--father-first X] [--father-last X]
                    [--mother-first X] [--mother-last X] [--sex male|female|unknown]
-                   [--sets ...] [--concurrency N] [--limit N] [--quiet]
+                   [--sets ...] [--concurrency N] [--limit N] [--quiet] [--no-index]
       numident-cli bench <data-dir> [--sets ...] [--concurrency N]
+      numident-cli index <data-dir>        build (or rebuild) <data-dir>/LASTNAME-INDEX
+      numident-cli index-info <data-dir>   show what the last-name index covers
 
     """.data(using: .utf8)!)
     exit(2)
@@ -35,6 +37,7 @@ var query = SearchQuery()
 var sets = Set(DatasetKind.allCases)
 var options = SearchOptions()
 var quiet = false
+var useIndex = true
 if command == "ssn" {
     guard !args.isEmpty else { usage() }
     query.ssn = args.removeFirst()
@@ -63,6 +66,7 @@ while !args.isEmpty {
     case "--concurrency": options.concurrency = Int(v()) ?? 2
     case "--limit": options.resultCap = Int(v()) ?? 10_000
     case "--quiet": quiet = true
+    case "--no-index": useIndex = false
     default: usage()
     }
 }
@@ -82,6 +86,46 @@ if command == "health" {
 }
 
 let files = health.allFiles.filter { sets.contains($0.kind) && $0.isUsable }
+
+if command == "index-info" {
+    guard let index = LastNameIndex.open(root: root) else { print("no last-name index in \(root)"); exit(1) }
+    let m = index.manifest
+    let covered = files.filter { index.fileNumber(for: $0) != nil }
+    print("built \(m.built), \(m.surnames) surnames, \(m.postings) entries, \(m.recordsIndexed) records")
+    print("covers \(covered.count) of \(files.count) usable files")
+    for f in files where index.fileNumber(for: f) == nil { print("  not covered: \(f.name)") }
+    exit(0)
+}
+
+if command == "index" {
+    let all = health.allFiles.filter(\.isUsable)
+    err("building last-name index over \(all.count) files, \(mb(all.reduce(0) { $0 + $1.size }))")
+    var lastPrint = Date.distantPast
+    let start = Date()
+    do {
+        let m = try LastNameIndexBuilder.build(root: root, files: all, cancel: CancelToken()) { p in
+            guard Date().timeIntervalSince(lastPrint) >= 2 else { return }
+            lastPrint = Date()
+            let eta = p.etaSeconds.map { String(format: " ETA %.0fs", $0) } ?? ""
+            err(String(format: "  %5.1f%%  %@ / %@%@  [%@]", p.fraction * 100, mb(p.bytesDone), mb(p.bytesTotal), eta,
+                       p.currentFile))
+        }
+        let dir = (root as NSString).appendingPathComponent(LastNameIndex.folderName)
+        let size = ((try? FileManager.default.contentsOfDirectory(atPath: dir)) ?? []).reduce(Int64(0)) { sum, name in
+            let a = try? FileManager.default.attributesOfItem(atPath: (dir as NSString).appendingPathComponent(name))
+            return sum + ((a?[.size] as? Int64) ?? 0)
+        }
+        print(String(format: "built in %.0fs: %d surnames, %lld entries, %lld records, %@ on disk",
+                     Date().timeIntervalSince(start), m.surnames, m.postings, m.recordsIndexed, mb(size)))
+        exit(0)
+    } catch {
+        err("index build failed: \(error)")
+        exit(1)
+    }
+}
+if useIndex, let index = LastNameIndex.open(root: root) {
+    options.lastNameIndex = index
+}
 if command == "bench" {
     // A last name no record has: forces a full scan of every byte with the real matcher.
     query = SearchQuery()
@@ -99,7 +143,8 @@ Task {
     for await event in SearchEngine.search(query, files: files, options: options) {
         switch event {
         case .started(let p):
-            err("searching \(p.filesTotal) files, \(mb(p.totalBytes)) (\(p.mode == .ssnLookup ? "SSN lookup" : "full scan"), concurrency \(options.concurrency))")
+            let how = p.mode == .ssnLookup ? "SSN lookup" : p.mode == .indexLookup ? "last-name index" : "full scan"
+            err("searching \(p.filesTotal) files, \(mb(p.totalBytes)) (\(how), concurrency \(options.concurrency))")
         case .progress(let p):
             if Date().timeIntervalSince(lastPrint) >= 1 {
                 lastPrint = Date()
@@ -120,7 +165,7 @@ Task {
             err(String(format: "done: %d matches, %@ read in %.2fs = %.0f MB/s%@%@",
                        s.matchCount, mb(s.bytesRead), s.elapsed, s.bytesPerSecond / 1e6,
                        s.cancelled ? " (cancelled)" : "", s.hitCap ? " (result cap reached)" : ""))
-            for o in s.outcomes where !o.method.isEmpty && s.mode == .ssnLookup {
+            for o in s.outcomes where !o.method.isEmpty && (s.mode != .fullScan || o.method.hasPrefix("last-name")) {
                 err("  \(o.file.name): \(o.method)")
             }
             for (k, why) in s.skipped { err("  skipped \(k.rawValue): \(why)") }

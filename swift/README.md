@@ -85,6 +85,17 @@ swift run NumidentViewer
      `mother:` `place:` `born:` `died:` `ssn:` `set:`. For example, `first:joe born:191`.
 
    Esc clears the filter.
+
+   **Last-name index (optional).** A search with a last name normally reads every file. If you
+   click *Build index…* in the sidebar (or run `numident-cli index <data-dir>`), the app reads
+   every file once and writes a last-name index of about 0.5 GB to `LASTNAME-INDEX/` in the data
+   folder. It is never built automatically. Once built, switch on *Use for last-name searches*:
+   searches with a last name then read only the records carrying that name (exact, prefix or
+   Soundex, including other/signature names and all death postings), and every candidate is still
+   checked by the normal matcher, so results are identical to a full scan. Files added or changed
+   after the build are read in full until you rebuild; the sidebar says how many. When a name is
+   so common that fetching each record would be slower than reading a file straight through, the
+   app reads that file instead. `numident-cli search --no-index` skips the index for comparison.
 6. **Person view.** Double-click a row (or select it and click *Open person*) to look up
    that SSN in every selected file. The view shows:
    - names, dates of birth, sex, birthplace, parents and death dates, each with the

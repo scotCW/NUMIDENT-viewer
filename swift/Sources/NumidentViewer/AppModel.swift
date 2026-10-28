@@ -7,6 +7,7 @@ enum Defaults {
     static let dataFolder = "dataFolder"
     static let concurrency = "concurrency"
     static let resultCap = "resultCap"
+    static let useLastNameIndex = "useLastNameIndex"
     static let defaultFolder = "/Volumes/TranscBlura/NUMIDENT"
 }
 
@@ -42,6 +43,12 @@ final class AppModel: ObservableObject {
     @Published private(set) var displayed: [NumidentRecord] = []
     private var haystacks: [NumidentRecord.ID: FilterText] = [:]
 
+    // Last-name index: only ever built when the user asks, and only used while switched on.
+    @Published private(set) var lastNameIndex: LastNameIndex?
+    @Published private(set) var indexBuild: IndexBuildProgress?
+    @Published var indexError: String?
+    private var indexBuildToken: CancelToken?
+
     // Person sheet
     @Published var personRequest: PersonRequest?
     @Published var person: PersonSummary?
@@ -71,6 +78,23 @@ final class AppModel: ObservableObject {
         return v == 0 ? 10_000 : v
     }
 
+    var useLastNameIndex: Bool {
+        get { UserDefaults.standard.bool(forKey: Defaults.useLastNameIndex) }
+        set {
+            UserDefaults.standard.set(newValue, forKey: Defaults.useLastNameIndex)
+            objectWillChange.send()
+        }
+    }
+
+    var isBuildingIndex: Bool { indexBuild != nil }
+
+    /// Selected usable files the index vouches for (unchanged since it was built).
+    var indexCoverage: (covered: Int, total: Int) {
+        let files = (health?.allFiles ?? []).filter(\.isUsable)
+        guard let idx = lastNameIndex else { return (0, files.count) }
+        return (files.filter { idx.fileNumber(for: $0) != nil }.count, files.count)
+    }
+
     init() {
         DebugHooks.configure(self)
         if DebugHooks.env["NUMIDENT_DATA"] == nil { rescan() }
@@ -83,7 +107,10 @@ final class AppModel: ObservableObject {
         let root = dataFolder
         Task.detached(priority: .userInitiated) {
             let h = Catalog.scan(root: root)
+            // Opening only reads an index the user built earlier; nothing is ever built here.
+            let index = h.rootExists ? LastNameIndex.open(root: root) : nil
             await MainActor.run {
+                self.lastNameIndex = index
                 let previous = self.health
                 self.health = h
                 self.isScanningCatalog = false
@@ -140,6 +167,10 @@ final class AppModel: ObservableObject {
             validationMessage = "No files selected."
             return
         }
+        guard !isBuildingIndex else {
+            validationMessage = "The last-name index is being built; search when it finishes or cancel the build."
+            return
+        }
         validationMessage = nil
         // Abandon any previous search entirely (its events are no longer wanted).
         searchHandle?.cancel()
@@ -156,7 +187,8 @@ final class AppModel: ObservableObject {
         searchedFiles = files
         isSearching = true
         let q = query
-        let options = SearchOptions(concurrency: concurrency, resultCap: resultCap)
+        let options = SearchOptions(concurrency: concurrency, resultCap: resultCap,
+                                    lastNameIndex: useLastNameIndex ? lastNameIndex : nil)
         let handle = SearchEngine.start(q, files: files, options: options)
         searchHandle = handle
         searchTask = Task {
@@ -231,6 +263,44 @@ final class AppModel: ObservableObject {
         personRequest = nil
         person = nil
     }
+
+    // MARK: - Last-name index
+
+    /// Reads every usable file once and writes LASTNAME-INDEX into the data folder. Only called from
+    /// the Build button, after the user confirms.
+    func buildIndex() {
+        guard !isBuildingIndex, !isSearching, let h = health, h.rootExists else { return }
+        let root = dataFolder
+        let files = h.allFiles.filter(\.isUsable)
+        let total = files.reduce(Int64(0)) { $0 + $1.size }
+        let token = CancelToken()
+        indexBuildToken = token
+        indexError = nil
+        indexBuild = IndexBuildProgress(bytesDone: 0, bytesTotal: total, currentFile: "", elapsed: 0)
+        Task.detached(priority: .userInitiated) {
+            do {
+                try LastNameIndexBuilder.build(root: root, files: files, cancel: token) { p in
+                    Task { @MainActor in if self.indexBuild != nil { self.indexBuild = p } }
+                }
+                let index = LastNameIndex.open(root: root)
+                await MainActor.run {
+                    self.lastNameIndex = index
+                    self.indexBuild = nil
+                    self.indexBuildToken = nil
+                    if index != nil { self.useLastNameIndex = true }
+                }
+            } catch {
+                let message: String? = token.isCancelled ? nil : "Index build failed: \(error)"
+                await MainActor.run {
+                    self.indexBuild = nil
+                    self.indexBuildToken = nil
+                    self.indexError = message
+                }
+            }
+        }
+    }
+
+    func cancelIndexBuild() { indexBuildToken?.cancel() }
 
     // MARK: - Settings
 
