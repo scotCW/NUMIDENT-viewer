@@ -31,8 +31,15 @@ see `gramps60.log` in the Gramps user folder.
 4. Fill in the citation's Volume/Page with where the record is: the form
    pre-fills `Reference No.: , File: `, e.g.
    `Reference No.: 65008336075, File: NUMCLM01_PU.txt @ 2500` (the viewer
-   shows the file and position for each result). Then fill in the fields and
-   select the people for the Father and Mother sections.
+   shows the file and position for each result).
+5. Set **Date** to the date the record was posted to the NUMIDENT (the
+   viewer's "SS-5 …" event date, or the cycle date). Leave **Place** empty
+   unless the record names a town: for a claim, you can use the field
+   office's town from Field Office Address.
+6. Fill in the fields and select the people for the Father and Mother sections.
+
+In the form editor, Source and Reference belong to the citation; Date and
+Place belong to the event the form creates.
 
 The citation says *where* the record is; the form fields say *what* it records.
 The SSN goes only in the person's Social Security Number field: one person can

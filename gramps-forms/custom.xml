@@ -19,6 +19,10 @@
     give the source a source attribute "Form" whose value is the form id
     (NUMSS5, NUMCLM or NUMDEATH).
 
+    The editor's Date is the event date: enter the date the record was
+    posted to the NUMIDENT. Leave Place empty unless the record names a town
+    (for a claim, the field office's town).
+
     Each form creates its own event type rather than a standard one (the
     Form addon manages every event of a form's type, so a standard type such
     as Death could be overwritten). Record the actual birth or death as a
@@ -31,9 +35,6 @@
  NUMIDENT SS-5 application
 -->
     <form id='NUMSS5' type='Social Security Application' title='NUMIDENT SS-5 Application' reference='Reference No.: , File: '>
-        <heading>
-            <_attribute>Date Posted</_attribute>
-        </heading>
         <heading>
             <_attribute>Entry</_attribute>
         </heading>
@@ -110,9 +111,6 @@
 -->
     <form id='NUMCLM' type='Social Security Claim' title='NUMIDENT Claim Record' reference='Reference No.: , File: '>
         <heading>
-            <_attribute>Date Posted</_attribute>
-        </heading>
-        <heading>
             <_attribute>Claim Type</_attribute>
             <_longname>Claim type (L life claim, D death claim)</_longname>
         </heading>
@@ -169,9 +167,6 @@
  NUMIDENT death record
 -->
     <form id='NUMDEATH' type='Social Security Death Record' title='NUMIDENT Death Record' reference='Reference No.: , File: '>
-        <heading>
-            <_attribute>Date Posted</_attribute>
-        </heading>
         <heading>
             <_attribute>Number of Death Postings</_attribute>
         </heading>
