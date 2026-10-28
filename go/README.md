@@ -1,5 +1,9 @@
 # NUMIDENT Viewer (Go)
 
+> **Deprecated.** This web version is no longer maintained. Use the native Mac app in
+> [`../swift/`](../swift/) instead; new features such as column sorting, the results filter
+> and the last-name index are only added there. This code still builds and runs.
+
 A local search tool for NARA's public-use NUMIDENT files (NUMSS5, NUMCLM,
 NUMDEATH). It reads the original text files directly: there is no import step
 and no database. Every search streams the selected files with a live progress

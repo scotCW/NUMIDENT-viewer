@@ -120,6 +120,7 @@ input[type=number]::-webkit-inner-spin-button { opacity: .4; }
 .app-icon { width: 20px; height: 20px; color: var(--accent); }
 .datadir { color: var(--text-2); font-size: 12px; margin-left: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 
+.deprecated-tag { font-size: 11px; font-weight: 600; color: var(--amber); background: var(--amber-bg); border: 1px solid var(--amber-line); border-radius: 4px; padding: 0 6px; margin-left: 6px; }
 .banner { flex: none; background: var(--amber-bg); border-bottom: 1px solid var(--amber-line); padding: 7px 14px; }
 .banner.danger { background: var(--red-bg); border-color: var(--red-line); }
 .banner-row { display: flex; align-items: center; gap: 8px; min-width: 0; }

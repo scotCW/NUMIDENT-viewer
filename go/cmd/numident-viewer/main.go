@@ -63,6 +63,7 @@ func main() {
 	}
 	url := "http://" + ln.Addr().String() + "/"
 	log.Printf("NUMIDENT Viewer %s on %s (data: %s)", version, url, cfg.DataDir)
+	log.Printf("Deprecated: this web version is no longer maintained; use the NUMIDENT Viewer Mac app (swift/) instead")
 
 	hs := &http.Server{Handler: srv.Handler(), ReadHeaderTimeout: 10 * time.Second}
 	go func() {
