@@ -1,0 +1,25 @@
+name: Feature request
+description: Suggest an improvement to the app or tools
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: "**Don't paste real records, names or SSNs here.** Issues are public."
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: Describe the research task or problem, not just the feature.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: What would help?
+      description: How you imagine it working.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What do you do today instead?

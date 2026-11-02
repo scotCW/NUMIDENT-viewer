@@ -1,0 +1,73 @@
+name: Bug report
+description: Something in the app or command-line tools doesn't work as it should
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Don't paste real records, names or SSNs here.** Issues are public. Describe the problem, or use a file name and byte offset instead, such as `NUMCLM01_PU.txt @ 2500`.
+        Report security problems privately through the repository's Security tab.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Tick NUMCLM
+        2. Search for a last name with Soundex
+        3. Click Open person
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - App
+        - numident-cli
+        - numident-gen
+        - Gramps forms
+        - Documentation
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version or commit
+      description: Find the app version in NUMIDENT Viewer → About NUMIDENT Viewer.
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: macOS 14.8
+    validations:
+      required: true
+  - type: dropdown
+    id: mac
+    attributes:
+      label: Mac
+      options:
+        - Apple Silicon
+        - Intel
+        - Intel with OpenCore Legacy Patcher
+    validations:
+      required: true
+  - type: textarea
+    id: data
+    attributes:
+      label: Data files
+      description: Which sets and files were involved, the drive type, and whether the files were converted from CSV. Include any dataset banner text, with personal details removed.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error messages or logs
+      description: Remove any real records, names and SSNs first.
+      render: text
