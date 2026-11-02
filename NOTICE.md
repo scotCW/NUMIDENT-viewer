@@ -12,11 +12,8 @@ them:
   Records Administration.
 - `go/internal/layout/testdata/*.txt` and the sample lines in the Swift tests:
   records from NARA's public-use NUMIDENT release.
-- `swift/Resources/AppIcon.svg` and `AppIcon.icns`: the seal of the Social
-  Security Administration.
 
-The SSA seal is not copyrighted, but its use is restricted by law: 42 U.S.C.
-§ 1320b-10 prohibits using SSA's name or emblems in a way that suggests SSA
-approves, endorses or is connected with a product. This project is not
-affiliated with or endorsed by SSA or NARA. Replace the icon before
-distributing builds of the app.
+The app icon (`swift/Resources/AppIcon.svg` and `AppIcon.icns`) is original to
+this project and released under the Unlicense with the code.
+
+This project is not affiliated with or endorsed by SSA or NARA.

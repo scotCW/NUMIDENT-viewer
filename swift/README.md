@@ -46,7 +46,7 @@ SIGN_IDENTITY="Developer ID Application: <name> (<team-id>)" NOTARY_PROFILE=NUMI
 The app needs no entitlements or capabilities. Any certificate other than ad-hoc also
 turns on hardened runtime and a secure timestamp. Launch signed builds from Finder or with
 `open`: an Apple-signed copy has been seen to exit at once when its inner executable is run
-directly. See `../NOTICE.md` about the SSA seal icon before distributing builds.
+directly.
 
 Development:
 
