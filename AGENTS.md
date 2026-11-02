@@ -1,7 +1,8 @@
 # Agent instructions
 
 `swift/` is the maintained app. `go/` is deprecated: don't add features to it. See
-`swift/README.md` for how the app works and `PLAN.md` for data facts and design decisions.
+`swift/README.md` for how the app works, and the
+[wiki](https://github.com/scotCW/NUMIDENT-viewer/wiki) for the code and data format.
 
 ## Commands
 

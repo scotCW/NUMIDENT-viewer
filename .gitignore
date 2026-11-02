@@ -6,6 +6,9 @@ swift/.swiftpm/
 xcuserdata/
 DerivedData/
 
+# Private planning notes
+PLAN.md
+
 # macOS
 .DS_Store
 ._*
