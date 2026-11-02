@@ -52,7 +52,7 @@ Development:
 
 ```bash
 swift build            # debug build of everything
-swift test             # 30 unit tests, generate their own synthetic data
+swift test             # 35 unit tests, generate their own synthetic data
 swift run NumidentViewer
 ```
 
