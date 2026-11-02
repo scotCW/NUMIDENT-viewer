@@ -3,6 +3,8 @@ go/bin/
 swift/.build/
 swift/dist/
 swift/.swiftpm/
+xcuserdata/
+DerivedData/
 
 # macOS
 .DS_Store

@@ -24,8 +24,18 @@ This produces:
 Plain `./build-app.sh` signs ad-hoc. A copy that arrives quarantined then needs
 **right-click → Open** (or `xattr -dr com.apple.quarantine "NUMIDENT Viewer.app"`).
 
-To sign and notarize, which needs a paid Apple Developer team and a **Developer ID
-Application** certificate, store a notary profile once (it prompts for an app-specific
+### Notarize with Xcode
+
+Open `NUMIDENT Viewer.xcodeproj`, choose **Product → Archive**, then in the Organizer choose
+**Distribute App → Direct Distribution**. Xcode signs with Developer ID, submits to Apple and
+staples the ticket using the signed-in account, then lets you export the app. This covers the
+app only, not `numident-cli`. A new source file in `Sources/NumidentViewer` must also be added
+to the Xcode target, because the project lists its files explicitly.
+
+### Notarize with the script
+
+This also covers `numident-cli`. It needs a paid Apple Developer team and a **Developer ID
+Application** certificate. Store a notary profile once (it prompts for an app-specific
 password), then build:
 
 ```bash
