@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -134,8 +135,24 @@ func (s *Server) Handler() http.Handler {
 	return localOnly(mux)
 }
 
-// localOnly rejects requests whose Host is not a loopback name, which
-// blocks DNS-rebinding attacks from web pages.
+// sameOrigin reports whether a request came from this app's own pages or from
+// a client that isn't a browser. A web page can send a simple POST here without
+// a CORS check, so its Origin and Sec-Fetch-Site headers are what identify it.
+func sameOrigin(r *http.Request) bool {
+	switch r.Header.Get("Sec-Fetch-Site") {
+	case "cross-site", "same-site":
+		return false
+	}
+	origin := r.Header.Get("Origin")
+	if origin == "" {
+		return true
+	}
+	u, err := url.Parse(origin)
+	return err == nil && u.Scheme == "http" && u.Host == r.Host
+}
+
+// localOnly rejects requests whose Host is not a loopback name, which blocks
+// DNS-rebinding attacks from web pages, and requests from other sites.
 func localOnly(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		host := r.Host
@@ -146,6 +163,10 @@ func localOnly(h http.Handler) http.Handler {
 		case "127.0.0.1", "localhost", "[::1]", "":
 		default:
 			http.Error(w, "forbidden host", http.StatusForbidden)
+			return
+		}
+		if !sameOrigin(r) {
+			http.Error(w, "forbidden origin", http.StatusForbidden)
 			return
 		}
 		w.Header().Set("X-Content-Type-Options", "nosniff")

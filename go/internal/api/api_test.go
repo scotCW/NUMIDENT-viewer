@@ -212,6 +212,51 @@ func TestRejectsForeignHost(t *testing.T) {
 	}
 }
 
+func TestRejectsOtherSites(t *testing.T) {
+	ts, _ := newTestServer(t, nil)
+	send := func(method, path string, headers map[string]string) int {
+		t.Helper()
+		req, err := http.NewRequest(method, ts.URL+path, strings.NewReader(`{"dataDir":"/changed"}`))
+		if err != nil {
+			t.Fatal(err)
+		}
+		for k, v := range headers {
+			req.Header.Set(k, v)
+		}
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		res.Body.Close()
+		return res.StatusCode
+	}
+	for name, headers := range map[string]map[string]string{
+		"other site":      {"Origin": "https://example.com"},
+		"null origin":     {"Origin": "null"},
+		"other port":      {"Origin": "http://127.0.0.1:1"},
+		"other scheme":    {"Origin": "https://" + strings.TrimPrefix(ts.URL, "http://")},
+		"fetch metadata":  {"Sec-Fetch-Site": "cross-site"},
+		"same-site fetch": {"Sec-Fetch-Site": "same-site"},
+	} {
+		if code := send("POST", "/api/settings", headers); code != 403 {
+			t.Errorf("%s: status %d, want 403", name, code)
+		}
+	}
+	var cfg Config
+	if getJSON(t, ts.URL+"/api/settings", &cfg); cfg.DataDir == "/changed" {
+		t.Error("a rejected request changed the settings")
+	}
+	if code := send("GET", "/api/settings", map[string]string{"Sec-Fetch-Site": "cross-site"}); code != 403 {
+		t.Errorf("cross-site GET: status %d, want 403", code)
+	}
+	if code := send("GET", "/api/settings", map[string]string{"Sec-Fetch-Site": "same-origin", "Origin": ts.URL}); code != 200 {
+		t.Errorf("own page: status %d, want 200", code)
+	}
+	if code := send("GET", "/", map[string]string{"Sec-Fetch-Site": "none"}); code != 200 {
+		t.Errorf("address bar: status %d, want 200", code)
+	}
+}
+
 func TestServesUI(t *testing.T) {
 	ts, _ := newTestServer(t, nil)
 	res, err := http.Get(ts.URL + "/")
