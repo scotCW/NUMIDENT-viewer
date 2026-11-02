@@ -5,7 +5,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 APP_NAME="NUMIDENT Viewer"
-BUNDLE_ID="local.numident.viewer"
+BUNDLE_ID="app.NUMIDENT-viewer"
 VERSION="1.0"
 DIST="dist"
 APP="$DIST/$APP_NAME.app"
