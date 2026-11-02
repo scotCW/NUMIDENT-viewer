@@ -232,8 +232,9 @@ struct RawLineView: View {
 
     private var ruler: String {
         let n = max(record.bytes.count, 10)
-        return String((1...n).map { i in
-            i % 10 == 0 ? Character(String((i / 10) % 10)) : (i % 5 == 0 ? "+" : "·")
+        return String((1...n).map { (i: Int) -> Character in
+            if i % 10 == 0 { return Character(String((i / 10) % 10)) }
+            return i % 5 == 0 ? "+" : "·"
         })
     }
 
