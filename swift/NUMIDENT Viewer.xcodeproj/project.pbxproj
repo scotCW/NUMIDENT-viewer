@@ -13,7 +13,19 @@
 		A10000000000000000000004 /* NumidentViewerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* NumidentViewerApp.swift */; };
 		A10000000000000000000005 /* PersonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005 /* PersonView.swift */; };
 		A10000000000000000000006 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006 /* AppIcon.icns */; };
-		A10000000000000000000007 /* NumidentCore in Frameworks */ = {isa = PBXBuildFile; productRef = A80000000000000000000001 /* NumidentCore */; };
+		A10000000000000000000007 /* libNumidentCore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000009 /* libNumidentCore.a */; };
+		C10000000000000000000000 /* Catalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000000 /* Catalog.swift */; };
+		C10000000000000000000001 /* Codes.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000001 /* Codes.swift */; };
+		C10000000000000000000002 /* LastNameIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000002 /* LastNameIndex.swift */; };
+		C10000000000000000000003 /* Layout.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000003 /* Layout.swift */; };
+		C10000000000000000000004 /* PartialDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000004 /* PartialDate.swift */; };
+		C10000000000000000000005 /* Person.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000005 /* Person.swift */; };
+		C10000000000000000000006 /* Query.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000006 /* Query.swift */; };
+		C10000000000000000000007 /* Record.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000007 /* Record.swift */; };
+		C10000000000000000000008 /* Scanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000008 /* Scanner.swift */; };
+		C10000000000000000000009 /* SearchEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000000000000000000009 /* SearchEngine.swift */; };
+		C1000000000000000000000A /* Soundex.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000000000000000000000A /* Soundex.swift */; };
+		C1000000000000000000000B /* Synthetic.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2000000000000000000000B /* Synthetic.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,6 +37,19 @@
 		A20000000000000000000006 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 		A20000000000000000000007 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A20000000000000000000008 /* NUMIDENT Viewer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "NUMIDENT Viewer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000000000000000000009 /* libNumidentCore.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libNumidentCore.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		C20000000000000000000000 /* Catalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Catalog.swift; sourceTree = "<group>"; };
+		C20000000000000000000001 /* Codes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Codes.swift; sourceTree = "<group>"; };
+		C20000000000000000000002 /* LastNameIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LastNameIndex.swift; sourceTree = "<group>"; };
+		C20000000000000000000003 /* Layout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Layout.swift; sourceTree = "<group>"; };
+		C20000000000000000000004 /* PartialDate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PartialDate.swift; sourceTree = "<group>"; };
+		C20000000000000000000005 /* Person.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Person.swift; sourceTree = "<group>"; };
+		C20000000000000000000006 /* Query.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Query.swift; sourceTree = "<group>"; };
+		C20000000000000000000007 /* Record.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Record.swift; sourceTree = "<group>"; };
+		C20000000000000000000008 /* Scanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scanner.swift; sourceTree = "<group>"; };
+		C20000000000000000000009 /* SearchEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchEngine.swift; sourceTree = "<group>"; };
+		C2000000000000000000000A /* Soundex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Soundex.swift; sourceTree = "<group>"; };
+		C2000000000000000000000B /* Synthetic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Synthetic.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,7 +57,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10000000000000000000007 /* NumidentCore in Frameworks */,
+				A10000000000000000000007 /* libNumidentCore.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A30000000000000000000011 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -43,6 +75,7 @@
 			isa = PBXGroup;
 			children = (
 				A40000000000000000000002 /* NumidentViewer */,
+				A40000000000000000000005 /* NumidentCore */,
 				A40000000000000000000003 /* Resources */,
 				A40000000000000000000004 /* Products */,
 			);
@@ -60,6 +93,25 @@
 			path = Sources/NumidentViewer;
 			sourceTree = "<group>";
 		};
+		A40000000000000000000005 /* NumidentCore */ = {
+			isa = PBXGroup;
+			children = (
+				C20000000000000000000000 /* Catalog.swift */,
+				C20000000000000000000001 /* Codes.swift */,
+				C20000000000000000000002 /* LastNameIndex.swift */,
+				C20000000000000000000003 /* Layout.swift */,
+				C20000000000000000000004 /* PartialDate.swift */,
+				C20000000000000000000005 /* Person.swift */,
+				C20000000000000000000006 /* Query.swift */,
+				C20000000000000000000007 /* Record.swift */,
+				C20000000000000000000008 /* Scanner.swift */,
+				C20000000000000000000009 /* SearchEngine.swift */,
+				C2000000000000000000000A /* Soundex.swift */,
+				C2000000000000000000000B /* Synthetic.swift */,
+			);
+			path = Sources/NumidentCore;
+			sourceTree = "<group>";
+		};
 		A40000000000000000000003 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -73,6 +125,7 @@
 			isa = PBXGroup;
 			children = (
 				A20000000000000000000008 /* NUMIDENT Viewer.app */,
+				A20000000000000000000009 /* libNumidentCore.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -91,14 +144,28 @@
 			buildRules = (
 			);
 			dependencies = (
+				AD0000000000000000000001 /* PBXTargetDependency */,
 			);
 			name = "NUMIDENT Viewer";
-			packageProductDependencies = (
-				A80000000000000000000001 /* NumidentCore */,
-			);
 			productName = "NUMIDENT Viewer";
 			productReference = A20000000000000000000008 /* NUMIDENT Viewer.app */;
 			productType = "com.apple.product-type.application";
+		};
+		A50000000000000000000002 /* NumidentCore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A70000000000000000000003 /* Build configuration list for PBXNativeTarget "NumidentCore" */;
+			buildPhases = (
+				A30000000000000000000012 /* Sources */,
+				A30000000000000000000011 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NumidentCore;
+			productName = NumidentCore;
+			productReference = A20000000000000000000009 /* libNumidentCore.a */;
+			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
 
@@ -118,17 +185,33 @@
 				Base,
 			);
 			mainGroup = A40000000000000000000001;
-			packageReferences = (
-				A90000000000000000000001 /* XCLocalSwiftPackageReference "." */,
-			);
 			productRefGroup = A40000000000000000000004 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				A50000000000000000000001 /* NUMIDENT Viewer */,
+				A50000000000000000000002 /* NumidentCore */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXContainerItemProxy section */
+		AE0000000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A60000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A50000000000000000000002;
+			remoteInfo = NumidentCore;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		AD0000000000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A50000000000000000000002 /* NumidentCore */;
+			targetProxy = AE0000000000000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXResourcesBuildPhase section */
 		A30000000000000000000003 /* Resources */ = {
@@ -151,6 +234,25 @@
 				A10000000000000000000003 /* DebugHooks.swift in Sources */,
 				A10000000000000000000004 /* NumidentViewerApp.swift in Sources */,
 				A10000000000000000000005 /* PersonView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A30000000000000000000012 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C10000000000000000000000 /* Catalog.swift in Sources */,
+				C10000000000000000000001 /* Codes.swift in Sources */,
+				C10000000000000000000002 /* LastNameIndex.swift in Sources */,
+				C10000000000000000000003 /* Layout.swift in Sources */,
+				C10000000000000000000004 /* PartialDate.swift in Sources */,
+				C10000000000000000000005 /* Person.swift in Sources */,
+				C10000000000000000000006 /* Query.swift in Sources */,
+				C10000000000000000000007 /* Record.swift in Sources */,
+				C10000000000000000000008 /* Scanner.swift in Sources */,
+				C10000000000000000000009 /* SearchEngine.swift in Sources */,
+				C1000000000000000000000A /* Soundex.swift in Sources */,
+				C1000000000000000000000B /* Synthetic.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -224,6 +326,24 @@
 			};
 			name = Release;
 		};
+		AB0000000000000000000005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = NumidentCore;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		AB0000000000000000000006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = NumidentCore;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -245,21 +365,17 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		A70000000000000000000003 /* Build configuration list for PBXNativeTarget "NumidentCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AB0000000000000000000005 /* Debug */,
+				AB0000000000000000000006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		A90000000000000000000001 /* XCLocalSwiftPackageReference "." */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = .;
-		};
-/* End XCLocalSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		A80000000000000000000001 /* NumidentCore */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = NumidentCore;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A60000000000000000000001 /* Project object */;
 }

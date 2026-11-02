@@ -29,8 +29,8 @@ Plain `./build-app.sh` signs ad-hoc. A copy that arrives quarantined then needs
 Open `NUMIDENT Viewer.xcodeproj`, choose **Product → Archive**, then in the Organizer choose
 **Distribute App → Direct Distribution**. Xcode signs with Developer ID, submits to Apple and
 staples the ticket using the signed-in account, then lets you export the app. This covers the
-app only, not `numident-cli`. A new source file in `Sources/NumidentViewer` must also be added
-to the Xcode target, because the project lists its files explicitly.
+app only, not `numident-cli`. A new source file in `Sources/NumidentViewer` or `Sources/NumidentCore` must also be added
+to its Xcode target, because the project lists its files explicitly.
 
 ### Notarize with the script
 
