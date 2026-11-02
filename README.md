@@ -8,8 +8,8 @@ The data files are not included, and the app works with whichever of them you ha
 released them, but this project doesn't know of a current official download. The files used
 to develop the app came from [sortedbyname.com](https://sortedbyname.com/sources/numident.html).
 This project is not affiliated with that site and has not vetted it. It currently publishes
-CSV files rather than the `.txt` files the app reads, so CSV files must be converted first,
-and this repository has no tool for that.
+CSV files rather than the `.txt` files the app reads, so CSV files must be converted first
+with `numident-cli convert`. See [the Swift README](swift/README.md#convert-csv-files).
 
 - [`swift/`](swift/README.md): the app, with build and usage instructions.
 - [`go/`](go/README.md): an earlier implementation, now deprecated.

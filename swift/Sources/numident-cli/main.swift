@@ -16,6 +16,8 @@ func usage() -> Never {
       numident-cli bench <data-dir> [--sets ...] [--concurrency N]
       numident-cli index <data-dir>        build (or rebuild) <data-dir>/LASTNAME-INDEX
       numident-cli index-info <data-dir>   show what the last-name index covers
+      numident-cli convert <csv|-> <out.txt> --set NUMSS5|NUMCLM|NUMDEATH [--report FILE]
+                   rebuild a fixed-width file from a CSV; never overwrites <out.txt>
 
     """.data(using: .utf8)!)
     exit(2)
@@ -32,6 +34,38 @@ var args = Array(CommandLine.arguments.dropFirst())
 guard args.count >= 2 else { usage() }
 let command = args.removeFirst()
 let root = args.removeFirst()
+
+if command == "convert" {
+    guard !args.isEmpty else { usage() }
+    let target = args.removeFirst()
+    var kind: DatasetKind?
+    var reportPath: String?
+    while !args.isEmpty {
+        let a = args.removeFirst()
+        func v() -> String { args.isEmpty ? bad() : args.removeFirst() }
+        switch a {
+        case "--set": kind = DatasetKind(rawValue: v().uppercased()) ?? bad()
+        case "--report": reportPath = v()
+        default: usage()
+        }
+    }
+    guard let kind else { usage() }
+    do {
+        let r = try CSVConverter.convert(source: root, target: target, kind: kind)
+        let name = (target as NSString).lastPathComponent
+        var report = "\(name): \(r.written) records written (\(r.masked) masked), \(r.skipped.count) malformed rows skipped\n"
+        for s in r.skipped { report += "  row \(s.row): \(s.fields) fields, \(s.characters) characters\n" }
+        print(report, terminator: "")
+        if let reportPath {
+            let existing = FileManager.default.contents(atPath: reportPath) ?? Data()
+            try (existing + Data(report.utf8)).write(to: URL(fileURLWithPath: reportPath), options: .atomic)
+        }
+        exit(0)
+    } catch {
+        err("convert failed: \(error)")
+        exit(1)
+    }
+}
 
 var query = SearchQuery()
 var sets = Set(DatasetKind.allCases)

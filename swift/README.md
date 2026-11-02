@@ -52,7 +52,7 @@ Development:
 
 ```bash
 swift build            # debug build of everything
-swift test             # 35 unit tests, generate their own synthetic data
+swift test             # 44 unit tests, generate their own synthetic data
 swift run NumidentViewer
 ```
 
@@ -199,6 +199,26 @@ numident-cli ssn    /Volumes/TranscBlura/NUMIDENT 001010601
 numident-cli search /Volumes/TranscBlura/NUMIDENT --last SMITH --first EDWARD --sets NUMSS5,NUMDEATH
 numident-cli bench  /Volumes/TranscBlura/NUMIDENT --sets NUMCLM --concurrency 2
 ```
+
+### Convert CSV files
+
+The app reads only fixed-width `.txt` files. `convert` rebuilds one from a CSV whose fields, joined
+together, make a whole record:
+
+```bash
+numident-cli convert NUMCLM02_PU26.csv /path/to/NUMCLM/NUMCLM02_PU.txt --set NUMCLM --report report.txt
+unzip -p NUMCLM.zip NUMCLM02_PU26.csv | numident-cli convert - NUMCLM02_PU.txt --set NUMCLM
+```
+
+- Name each output `<SET>NN_PU.txt` and put it in that set's folder, so the app can find it.
+- It never overwrites an existing file. It writes `<out>.partial` and renames it once complete.
+- Rows with the wrong field count or width are skipped. Their row numbers are printed and added
+  to the optional report, without their contents.
+- Bytes are copied unchanged. A CSV with masked records produces masked records.
+
+This logic matched real NUMCLM CSV files when first written as a script. The tool itself has been
+tested only on synthetic data, and CSV files for NUMSS5 and NUMDEATH have not been seen. Check the
+output with `numident-cli health`, and compare a few records before relying on it.
 
 ## Synthetic test data
 
