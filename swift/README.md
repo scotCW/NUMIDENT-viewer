@@ -18,13 +18,25 @@ Requires Xcode 15+ (Swift 5.10+) on the build machine. No third-party dependenci
 
 This produces:
 
-- `dist/NUMIDENT Viewer.app`: universal (x86_64 + arm64), ad-hoc signed,
-  `LSMinimumSystemVersion` 13.0
+- `dist/NUMIDENT Viewer.app`: universal (x86_64 + arm64), `LSMinimumSystemVersion` 13.0
 - `dist/numident-cli`: universal command-line tool (health check, search, benchmark)
 
-Copy the `.app` to the other Mac. Because it is ad-hoc signed and not notarized, the
-first launch needs **right-click → Open** (or
-`xattr -dr com.apple.quarantine "NUMIDENT Viewer.app"`).
+Plain `./build-app.sh` signs ad-hoc. A copy that arrives quarantined then needs
+**right-click → Open** (or `xattr -dr com.apple.quarantine "NUMIDENT Viewer.app"`).
+
+To sign and notarize, which needs a paid Apple Developer team and a **Developer ID
+Application** certificate, store a notary profile once (it prompts for an app-specific
+password), then build:
+
+```bash
+xcrun notarytool store-credentials NUMIDENT-notary --apple-id <apple-id> --team-id <team-id>
+SIGN_IDENTITY="Developer ID Application: <name> (<team-id>)" NOTARY_PROFILE=NUMIDENT-notary ./build-app.sh
+```
+
+The app needs no entitlements or capabilities. Any certificate other than ad-hoc also
+turns on hardened runtime and a secure timestamp. Launch signed builds from Finder or with
+`open`: an Apple-signed copy has been seen to exit at once when its inner executable is run
+directly. See `../NOTICE.md` about the SSA seal icon before distributing builds.
 
 Development:
 
