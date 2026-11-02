@@ -14,6 +14,9 @@ struct NumidentViewerApp: App {
                 .frame(minWidth: 1000, minHeight: 640)
         }
         .commands {
+            CommandGroup(replacing: .appInfo) {
+                Button("About NUMIDENT Viewer") { AboutPanel.show() }
+            }
             CommandGroup(after: .newItem) {
                 Button("Rescan Data Folder") { model.rescan() }
                     .keyboardShortcut("r", modifiers: [.command, .shift])
@@ -35,6 +38,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
+}
+
+enum AboutPanel {
+    static let repository = "https://github.com/scotCW/NUMIDENT-viewer"
+
+    static func show() {
+        NSApp.activate(ignoringOtherApps: true)
+        NSApp.orderFrontStandardAboutPanel(options: [.credits: credits()])
+    }
+
+    private static func credits() -> NSAttributedString {
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.alignment = .center
+        paragraph.paragraphSpacing = 8
+        // labelColor keeps the text readable in dark mode.
+        let body: [NSAttributedString.Key: Any] = [
+            .font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize),
+            .foregroundColor: NSColor.labelColor,
+            .paragraphStyle: paragraph,
+        ]
+        let text = NSMutableAttributedString(
+            string: "Searches the National Archives' public-use NUMIDENT files directly from their text files, with no import or database.\n",
+            attributes: body)
+        var link = body
+        link[.link] = URL(string: repository)
+        text.append(NSAttributedString(string: "github.com/scotCW/NUMIDENT-viewer\n", attributes: link))
+        text.append(NSAttributedString(
+            string: "The code is licensed under the Unlicense.\nNot affiliated with or endorsed by SSA or NARA.",
+            attributes: body))
+        return text
+    }
 }
 
 struct SettingsView: View {
