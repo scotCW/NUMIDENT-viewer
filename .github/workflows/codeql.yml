@@ -3,10 +3,17 @@ name: CodeQL
 on:
   push:
     branches: [master]
+    paths-ignore: ["**/*.md", ".github/ISSUE_TEMPLATE/**"]
   pull_request:
     branches: [master]
+    paths-ignore: ["**/*.md", ".github/ISSUE_TEMPLATE/**"]
   schedule:
     - cron: "23 6 * * 1"
+
+# A newer push replaces a scan that is still running on the same branch.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
