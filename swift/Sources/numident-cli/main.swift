@@ -53,12 +53,18 @@ if command == "convert" {
     do {
         let r = try CSVConverter.convert(source: root, target: target, kind: kind)
         let name = (target as NSString).lastPathComponent
-        var report = "\(name): \(r.written) records written (\(r.masked) masked), \(r.skipped.count) malformed rows skipped\n"
-        for s in r.skipped { report += "  row \(s.row): \(s.fields) fields, \(s.characters) characters\n" }
+        var report = "\(name): \(r.written) records written (\(r.masked) masked), \(r.skippedCount) malformed rows skipped\n"
+        for s in r.skipped { report += "  line \(s.line): \(s.fields) fields, \(s.characters) characters\n" }
+        if r.skippedCount > r.skipped.count { report += "  and \(r.skippedCount - r.skipped.count) more\n" }
         print(report, terminator: "")
         if let reportPath {
-            let existing = FileManager.default.contents(atPath: reportPath) ?? Data()
-            try (existing + Data(report.utf8)).write(to: URL(fileURLWithPath: reportPath), options: .atomic)
+            // The conversion is already complete, so a report that can't be written is only a warning.
+            do {
+                let existing = FileManager.default.contents(atPath: reportPath) ?? Data()
+                try (existing + Data(report.utf8)).write(to: URL(fileURLWithPath: reportPath), options: .atomic)
+            } catch {
+                err("warning: converted, but the report couldn't be written to \(reportPath): \(error.localizedDescription)")
+            }
         }
         exit(0)
     } catch {

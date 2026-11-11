@@ -52,7 +52,7 @@ Development:
 
 ```bash
 swift build            # debug build of everything
-swift test             # 44 unit tests, generate their own synthetic data
+swift test             # 49 unit tests, generate their own synthetic data
 swift run NumidentViewer
 ```
 
@@ -212,8 +212,11 @@ unzip -p NUMCLM.zip NUMCLM02_PU26.csv | numident-cli convert - NUMCLM02_PU.txt -
 
 - Name each output `<SET>NN_PU.txt` and put it in that set's folder, so the app can find it.
 - It never overwrites an existing file. It writes `<out>.partial` and renames it once complete.
-- Rows with the wrong field count or width are skipped. Their row numbers are printed and added
-  to the optional report, without their contents.
+- Rows with the wrong field count or width are skipped. Their line numbers are printed and added
+  to the optional report, without their contents. If the first 1,000 rows are all skipped, it
+  stops: the set is probably wrong.
+- A header row is optional.
+- Only one conversion can write a given output at a time.
 - Bytes are copied unchanged. A CSV with masked records produces masked records.
 
 This logic matched real NUMCLM CSV files when first written as a script. The tool itself has been
